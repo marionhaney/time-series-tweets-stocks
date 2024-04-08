@@ -1,5 +1,5 @@
-# Number of tweets as a time series
-Investigating the number of tweets per day as a time series: EDA.
+# Number of Tweets as a time series
+Investigating the number of Tweets per day as a time series: EDA.
 
 Load libraries:
 ```{r}
@@ -22,7 +22,9 @@ df$day <- as.Date(df$Date,"%Y-%m-%d %H:%M:%S")
 head(df)
 ```
 
-EDA for number of tweets per day:
+# Number of Tweets per day
+
+EDA for number of Tweets per day:
 ```{r}
 # Cast 'day' column to a string version to count
 df$str_day <- as.character(df$day)
@@ -33,7 +35,7 @@ names(num_tweets_day) <- c("day", "num_tweets")
 head(num_tweets_day)
 ```
 
-Turn the number of tweets into a time series:
+Turn the number of Tweets into a time series:
 ```{r}
 num_tweets_ts <- ts(num_tweets_day$num_tweets, 
                     start = c(2021, 273),
@@ -64,6 +66,49 @@ pacf(num_tweets_ts, ylab = "PACF",
 ```{r}
 sort(unique(df$Company.Name))
 ```
+
+How many Tweets per company:
+```{r}
+table(df$Company.Name)
+```
+
+
+## Looking at just Tesla Tweets
+
+Filter to just Tesla Tweets:
+```{r}
+tesla <- filter(df, df$Company.Name == "Tesla, Inc.")
+num_tweets_tesla <- data.frame(table(tesla$str_day))
+names(num_tweets_tesla) <- c("day", "num_tweets")
+```
+
+Turn the number of Tweets into a time series:
+```{r}
+tesla_ts <- ts(num_tweets_tesla$num_tweets, 
+                    start = c(2021, 273),
+                    frequency = 365)
+head(tesla_ts)
+```
+
+
+Plot:
+```{r}
+plot(tesla_ts, main = "Number of Tweets Mentioning Tesla \n Per Day",
+     ylab = "Number of Tweets")
+```
+
+ACF:
+```{r}
+acf(tesla_ts, main = "ACF of the Number of Tesla Tweets",
+    ylab = "ACF")
+```
+
+PACF:
+```{r}
+pacf(tesla_ts, main = "PACF of the Number of Tesla Tweets",
+    ylab = "PACF")
+```
+
 
 
 
