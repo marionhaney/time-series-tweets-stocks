@@ -1,0 +1,91 @@
+---
+title: "Report template"
+author: "Author names"
+documentclass: article
+geometry: margin=1in
+output:
+  bookdown::pdf_document2:
+    toc: no
+    includes:  
+      in_header: preamble-latex.tex
+---
+
+```{r, include=FALSE}
+###########################
+# STYLE EDITS: IGNORE THIS
+###########################
+
+# normally you'll want to include this with the libraries at the beginning of your document
+knitr::opts_chunk$set(message = FALSE) # include this if you don't want markdown to knit messages
+knitr::opts_chunk$set(warning = FALSE) # include this if you don't want markdown to knit warnings
+knitr::opts_chunk$set(echo = FALSE) # set echo = FALSE to hide code from output
+
+```
+
+# Executive summary {-}
+
+...
+
+# Introduction
+
+...
+
+# Methods
+
+Text example that references Table \@ref(tab:table-example).
+
+```{r table-example}
+library(pander)
+library(tidyverse)
+library(reshape2)
+library(kableExtra)
+library(knitr)
+
+# Titanic table
+
+titantic <- read_csv(paste0("https://raw.githubusercontent.com/",
+                            "benjaminleroy/stat315summer_data/",
+                            "master/assignments/assignment03/titanic.csv"))
+titantic %>% group_by(Pclass, Sex) %>%
+  summarize(t = n()) %>% dcast(Pclass ~ Sex) %>%
+  rename(`Passenger class` = Pclass) %>%
+  kable(format = "latex",
+        caption = paste("Passenger gender and class divisions on the Titanic.",
+                        "More 3rd class passengers were males seeking a",
+                        "better life."),
+        booktabs = T) %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+# Results
+
+Text example that references Figure \@ref(fig:fig-example).
+
+```{r fig-example, fig.cap = "Survival rates across different passenger classes. This figure does not tell the full story as Table 1 shows that more of the lower class passengers were male."}
+
+# Titanic visual
+
+titantic %>% ggplot() +
+  geom_bar(aes(fill = factor(Survived, 
+                             levels = c(0,1), 
+                             labels = c("No", "Yes")), Pclass), 
+           position = "fill") +
+  scale_fill_manual(values = c("black", "lightblue")) +
+  labs(fill = "Survived",
+       y = "Proportion",
+       x = "Passenger class",
+       title = "Survival rates by passenger class")
+```
+
+# Discussion
+
+...
+
+\pagebreak
+
+# Appendix {-}
+
+Notice how the appendix below gathers all the code blocks above and nicely pastes them together.
+
+```{r ref.label=knitr::all_labels(), echo = T, eval = F}
+```
