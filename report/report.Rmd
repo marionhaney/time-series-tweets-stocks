@@ -28,6 +28,20 @@ knitr::opts_chunk$set(echo = FALSE) # set echo = FALSE to hide code from output
 
 # Introduction
 
+Research Questions:
+- Do the frequency and sentiment of Tesla-related Tweets have a relationship with Tesla’s stock close price?
+- Can we use frequency and sentiment of Tweets mentioning Tesla to forecast Tesla’s stock price?
+
+Data
+For this analysis, we utilized two datasets from Kaggle.  
+Twitter Tweets: 80793 Tweets, 25 companies
+Stock Market Data: Daily close price of stock for same 25 companies
+Companies are the top 25 “most watched” stocks from Yahoo Finance
+Filtered to only Tweets that mention Tesla or TSLA stock
+46% of the Tweets in data mentioned TSLA (37422 Tweets)
+Date range: 09-30-2021 to 09-30-2022 (excluding weekends)
+
+
 ...
 
 # Methods
@@ -59,7 +73,15 @@ titantic %>% group_by(Pclass, Sex) %>%
 
 
 ```{r}
-df <- read.csv("data/stock_tweets.csv")  %>%
+suppressMessages(library(tidyverse))
+suppressMessages(library(lubridate))
+suppressMessages(library(tidytext))
+suppressMessages(library(textdata))
+suppressMessages(library(dplyr))
+suppressMessages(library(quantmod))
+suppressMessages(library(fGarch))
+
+df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv")  %>%
   filter(Stock.Name == 'TSLA') %>%
   mutate(Tweet.ID = row_number()) %>%
   dplyr::select(Tweet.ID, Date, Tweet)
@@ -132,7 +154,7 @@ daily_sentiment[which.min(daily_sentiment$daily_sentiment),]
 ```
 
 ```{r}
-df <- read.csv("data/stock_yfinance_data.csv") %>%
+df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_yfinance_data.csv") %>%
   filter(Stock.Name == 'TSLA') %>%
   dplyr::select(Date, Adj.Close)
 df$Date <- as.Date(df$Date)
@@ -196,6 +218,7 @@ var.model <- VAR(df, p = optimal.lags)
 
 summary(var.model)
 ```
+
 ```{r}
 suppressMessages(library(dplyr))
 
@@ -241,6 +264,22 @@ titantic %>% ggplot() +
 ```
 
 # Discussion
+
+## Conclusion
+Stock price cannot be predicted based on the current or lagged 1 values of 
+daily sentiment or lagged 1 or 2 values for returns. The coefficient for lagged 
+2 daily sentiment is statistically significant but too small to be useful. Daily 
+sentiment cannot be predicted based on current stock price but CAN be explained 
+by the lagged 1 or 2 values of the stock price or daily sentiment. 
+
+
+## Future Work
+- Stock prices are expected to increase over time. 
+- Incorporate indicator of overall market performance into the model.
+- Negative Tweets/news events may only correspond to temporary dips in stock price, suggesting longer lags should be used for forecasting.
+- Additional analysis with Tweet engagement along with sentiment score.
+- VAR did not determine number of Tweets per day using sentiment score useful, but engagement levels (likes, retweets, views, etc.) may be more predictive of stock price.
+
 
 ...
 
