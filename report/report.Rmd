@@ -1,6 +1,6 @@
 ---
-title: "Report template"
-author: "Author names"
+title: "Modeling Tesla Stock Price Using Tweets"
+author: "Divya Rao, Jay Chung, Marion Haney, Tilina Alzaben"
 documentclass: article
 geometry: margin=1in
 output:
@@ -56,6 +56,169 @@ titantic %>% group_by(Pclass, Sex) %>%
         booktabs = T) %>%
   kable_styling(latex_options = "HOLD_position")
 ```
+
+
+```{r}
+df <- read.csv("data/stock_tweets.csv")  %>%
+  filter(Stock.Name == 'TSLA') %>%
+  mutate(Tweet.ID = row_number()) %>%
+  dplyr::select(Tweet.ID, Date, Tweet)
+dim(df)
+names(df)
+
+df$Date <-  ymd(substr(df$Date, 1, 10))
+tweets <- data.frame(df)
+
+```
+
+
+```{r}
+# Sentiment analysis
+map_bing_sentiment <- function(sentiment) {
+  ifelse(sentiment %in% c("positive"), 1, ifelse(sentiment %in% c("negative"), -1, 0))
+}
+
+map_nrc_sentiment <- function(sentiment) {
+  nrc_positive_sentiments <- c("positive", "anticipation", "surprise", "trust", "joy")
+  nrc_negative_sentiments <- c("negative", "anger", "disgust", "fear", "sadness")
+  ifelse(sentiment %in% nrc_positive_sentiments, 1,
+         ifelse(sentiment %in% nrc_negative_sentiments, -1, 0))
+}
+
+tweet_tokens <- tweets %>%
+  unnest_tokens(word, Tweet)  
+
+sentiments <- get_sentiments("bing") %>% mutate(sentiment_score = map_bing_sentiment(sentiment))
+#sentiments <- get_sentiments("afinn") %>% mutate(sentiment_score = value)
+#sentiments <- get_sentiments("nrc") %>% mutate(sentiment_score = map_nrc_sentiment(sentiment))
+
+tweets_sentiment <- tweet_tokens %>%
+  inner_join(sentiments, by = "word", relationship = "many-to-many")  %>%
+  distinct(Tweet.ID, Date, word, .keep_all = TRUE)
+
+tweets_sentiment_summary <- tweets_sentiment %>%
+  group_by(Tweet.ID, Date) %>%  
+  summarise(sentiment_score = sum(sentiment_score, na.rm = TRUE), .groups = "drop")
+
+daily_sentiment <- tweets_sentiment_summary  %>%
+  group_by(Date) %>%
+  summarise(daily_sentiment = mean(sentiment_score))
+```
+
+Most positive Tweet
+```{r}
+most_pos_twid <- 
+  tweets_sentiment_summary[which.max(tweets_sentiment_summary$sentiment_score),"Tweet.ID"]
+tweets[most_pos_twid$Tweet.ID,]$Tweet
+max(tweets_sentiment_summary$sentiment_score)
+```
+
+Most negative Tweet
+```{r}
+most_neg_twid <- 
+  tweets_sentiment_summary[which.min(tweets_sentiment_summary$sentiment_score),"Tweet.ID"]
+tweets[most_neg_twid$Tweet.ID,]$Tweet
+min(tweets_sentiment_summary$sentiment_score)
+```
+
+Most positive day
+```{r}
+daily_sentiment[which.max(daily_sentiment$daily_sentiment),]
+```
+
+Most negative day
+```{r}
+daily_sentiment[which.min(daily_sentiment$daily_sentiment),]
+```
+
+```{r}
+df <- read.csv("data/stock_yfinance_data.csv") %>%
+  filter(Stock.Name == 'TSLA') %>%
+  dplyr::select(Date, Adj.Close)
+df$Date <- as.Date(df$Date)
+head(df)
+df$Returns <- c(diff(log(df$Adj.Close)), NA)
+stock <- data.frame(df)
+stock <- stock %>% na.omit()
+```
+```{r}
+plot(stock$Returns, main="TSLA Log Returns")
+par(mfrow=c(1,1))
+acf(stock$Returns, main="ACF of TSLA Log Returns", na.action = na.pass)
+pacf(stock$Returns, main="PACF of TSLA Log Returns", na.action = na.pass)
+acf(stock$Returns^2, main="ACF of TSLA Log Returns^2", na.action = na.pass)
+pacf(stock$Returns^2, main="PACF of TSLA Log Returns^2", na.action = na.pass)
+```
+```{r}
+suppressWarnings(library(forecast))
+
+arma_rt_squared <- auto.arima(stock$Returns^2, max.p = 5, max.q = 5, max.order = 10,
+                              stationary = T, seasonal = F, trace = F,
+                              stepwise = F, approximation = F)
+summary(arma_rt_squared)
+```
+
+```{r}
+stock_ts <- ts(stock$Returns, 
+               start=c(2021,9), 
+               frequency=365)  
+garch_model <- garchFit(~ garch(1,1), data=stock_ts, trace=FALSE)
+summary(garch_model)
+
+par(mfrow=c(1,1))
+plot(garch_model, which = 1)
+plot(garch_model, which = 2)
+
+par(mfrow=c(1,1))
+```
+
+#### Combine data from stock, daily_sentiment
+
+```{r}
+combined_data <- left_join(stock, daily_sentiment, by = "Date")
+cor(combined_data$daily_sentiment, combined_data$Returns, use = "complete.obs")
+
+model <- lm(Returns ~ daily_sentiment, data = combined_data)
+summary(model)
+```
+
+```{r}
+suppressMessages(library(vars))
+df <- combined_data[, c("Returns", "daily_sentiment")]
+# VARselect
+lag.select <- VARselect(df, 
+                        lag.max = 30, 
+                        type = "both")
+optimal.lags <- lag.select$selection['AIC(n)']
+
+# Fit the VAR model
+var.model <- VAR(df, p = optimal.lags)
+
+summary(var.model)
+```
+```{r}
+suppressMessages(library(dplyr))
+
+combined_data <- combined_data %>%
+  arrange(Date) %>%
+  mutate(
+    Returns_l1 = lag(Returns, 1),
+    Returns_l2 = lag(Returns, 2),
+    daily_sentiment_l1 = lag(daily_sentiment, 1),
+    daily_sentiment_l2 = lag(daily_sentiment, 2)
+  )
+
+model <- lm(Returns ~ Returns_l1 + Returns_l2 + daily_sentiment + daily_sentiment_l1 + daily_sentiment_l2, data = combined_data)
+
+summary(model)
+```
+
+```{r}
+model <- lm(daily_sentiment ~ Returns + Returns_l1 + Returns_l2 + daily_sentiment_l1 + daily_sentiment_l2, data = combined_data)
+
+summary(model)
+```
+
 
 # Results
 
