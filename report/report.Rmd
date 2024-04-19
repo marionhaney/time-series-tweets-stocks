@@ -46,6 +46,27 @@ Date range: 09-30-2021 to 09-30-2022 (excluding weekends)
 
 # Methods
 
+
+## Exploratory Data Analysis
+
+
+## Sentiment Analysis
+
+
+## GARCH Model
+Based on the non-constant variance and non-stationarity seen from the 
+EDA, we decided to use a GARCH model. A GARCH (generalized autoregressive 
+conditionally heteroskedastic) model uses values of the past observations and 
+variances to model the variance at time t. GARCH is used commonly with financial
+data because of the high volatility. We first ran auto.arima on the 
+returns^2 = (diff of the log of adjusted closing price)^2 to get the order of 
+the GARCH model. Based on this order, we decided to fit a GARCH(1, 1) model to 
+returns (diff of the log of the adjusted closing price). 
+
+
+
+
+
 Text example that references Table \@ref(tab:table-example).
 
 ```{r table-example}
@@ -264,6 +285,8 @@ titantic %>% ggplot() +
 ```
 
 # Discussion
+
+
 
 ## Conclusion
 Stock price cannot be predicted based on the current or lagged 1 values of 
