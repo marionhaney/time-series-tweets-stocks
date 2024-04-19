@@ -291,6 +291,22 @@ titantic %>% ggplot() +
 ```
 
 # Discussion
+Our goal for this project was to predict Tesla's stock price based on the 
+sentiment of the tweets. For the first linear model, we are predicting returns based 
+on past returns, current daily sentiment, past daily sentiment. We see only 
+one star, which means none of the other features have a statistically 
+significant coefficient other than l2 daily sentiment which has tiny 
+coefficient of 0.02. This means there is a small correlation between returns 
+and l2 daily sentiment. In the second linear model, we are predicting daily 
+sentiment using returns, past returns, past daily sentiment. Almost 
+all of the features are statistically significant value other than current 
+returns. This means that we can predict the sentiment with an adjusted r2 of 
+10%, these features account for 10% of the variability of daily sentiment. Past 
+returns and past daily sentiment granger causes current daily sentiment (that 
+means that past returns and past daily sentiment can be used to predict the 
+daily sentiment for the current day). What we would have wanted is to use past
+returns and past daily sentiment to predict current returns. 
+
 
 
 
