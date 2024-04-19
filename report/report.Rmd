@@ -52,6 +52,12 @@ Date range: 09-30-2021 to 09-30-2022 (excluding weekends)
 
 ## Sentiment Analysis
 
+For tweets, we decided to break them down into a bag of words representation. 
+Each word is given a sentiment score of 1 if it is positive, -1 if it is 
+negative, and 0 otherwise (neutral). These sentiment scores are summed into a 
+sentiment score for the tweet. Sentiment scores are averaged into a daily 
+tweet sentiment score for the day.
+
 
 ## GARCH Model
 Based on the non-constant variance and non-stationarity seen from the 
