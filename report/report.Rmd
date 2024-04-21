@@ -39,7 +39,7 @@ Stock Market Data: Daily close price of stock for same 25 companies
 Companies are the top 25 “most watched” stocks from Yahoo Finance
 Filtered to only Tweets that mention Tesla or TSLA stock
 46% of the Tweets in data mentioned TSLA (37422 Tweets)
-Date range: 09-30-2021 to 09-30-2022 (excluding weekends)
+Date range: 09-30-2021 to 09-30-2022 (excluding weekends).
 
 
 ...
@@ -48,37 +48,40 @@ Date range: 09-30-2021 to 09-30-2022 (excluding weekends)
 
 ## Sentiment Analysis
 
-For tweets, we decided to break them down into a bag of words representation. 
-Each word is given a sentiment score of 1 if it is positive, -1 if it is 
-negative, and 0 otherwise (neutral). These sentiment scores are summed into a 
-sentiment score for the tweet. Sentiment scores are averaged into a daily 
-tweet sentiment score for the day.
+For our analysis, we wanted to get a sentiment score for each 
+tweet. Our approach involved breaking the tweet into a bag of words 
+representation, where each word is given a sentiment score of 1 if it is 
+positive, -1 if it is negative, and 0 otherwise (neutral). These individual
+word scores were then summed into a sentiment score for each tweet. Finally, 
+the sentiment scores were averaged into a daily tweet sentiment score for the
+day. 
 
 ## Exploratory Data Analysis
-- EDA
-- auto.arima
-- ARMA
-- garch
-- VAR for feature selection
 
+Exploratory Data Analysis (EDA) was conducted for deciding on reasonable 
+data transformations and analysis, determining which type of model to use, and 
+choosing the parameters for these models. 
 
-
-
-
-
-
+## auto.arima()
+The auto.arima() function was applied on the squared returns, which is 
+the difference of the log of the adjusted closing price squared. This 
+helped identify if there was autoregression or moving average pattern 
+in the votatility of the returns and helps determine the order of
+the GARCH model. 
 
 ## GARCH Model
 Based on the non-constant variance and non-stationarity seen from the 
 EDA, we decided to use a GARCH model. A GARCH (generalized autoregressive 
 conditionally heteroskedastic) model uses values of the past observations and 
 variances to model the variance at time t. GARCH is used commonly with financial
-data because of the high volatility. We first ran auto.arima on the 
-returns^2 = (diff of the log of adjusted closing price)^2 to get the order of 
-the GARCH model. Based on this order, we decided to fit a GARCH(1, 1) model to 
-returns (diff of the log of the adjusted closing price). 
+data because of the high volatility. Since we got the order of the
+model from running auto.arima(), we decided to fit a GARCH(1, 1) model to 
+returns, the difference of the log of the adjusted closing price.
 
-
+## VAR
+We used a VAR (Vector Autoregression) model for feature selection for 
+the two linear models. After running the VARselect() function, we found that 
+the lagged values of l1 and l2 and lagged values of returns.
 
 
 
