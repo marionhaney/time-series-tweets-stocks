@@ -209,11 +209,16 @@ acf(stock$Returns^2, main="ACF of TSLA Log Returns^2", na.action = na.pass)
 pacf(stock$Returns^2, main="PACF of TSLA Log Returns^2", na.action = na.pass)
 ```
 
+## GARCH Model
+Based on the non-constant variance and non-stationarity seen from the 
+EDA, we decided to use a GARCH model. A GARCH (generalized autoregressive 
+conditionally heteroskedastic) model uses values of the past observations and 
+variances to model the variance at time t. GARCH is used commonly with financial
+data because of the high volatility. Since we got the order of the
+model from running auto.arima(), we decided to fit a GARCH(1, 1) model to 
+returns, the difference of the log of the adjusted closing price.
 
-## GARCH model
-- why did we choose GARCH
-
-## auto.arima()
+### auto.arima()
 The auto.arima() function was applied on the squared returns, which is 
 the difference of the log of the adjusted closing price squared. This 
 helped identify if there was autoregression or moving average pattern 
@@ -228,15 +233,6 @@ arma_rt_squared <- auto.arima(stock$Returns^2, max.p = 5, max.q = 5, max.order =
                               stepwise = F, approximation = F)
 summary(arma_rt_squared)
 ```
-
-## GARCH Model
-Based on the non-constant variance and non-stationarity seen from the 
-EDA, we decided to use a GARCH model. A GARCH (generalized autoregressive 
-conditionally heteroskedastic) model uses values of the past observations and 
-variances to model the variance at time t. GARCH is used commonly with financial
-data because of the high volatility. Since we got the order of the
-model from running auto.arima(), we decided to fit a GARCH(1, 1) model to 
-returns, the difference of the log of the adjusted closing price.
 
 ## VAR
 We used a VAR (Vector Autoregression) model for feature selection for 
@@ -308,25 +304,6 @@ model <- lm(daily_sentiment ~ Returns + Returns_l1 + Returns_l2 + daily_sentimen
 summary(model)
 ```
 
-
-##### Example from Mikael
-Text example that references Figure \@ref(fig:fig-example).
-
-```{r fig-example, fig.cap = "Survival rates across different passenger classes. This figure does not tell the full story as Table 1 shows that more of the lower class passengers were male."}
-
-# Titanic visual
-
-titantic %>% ggplot() +
-  geom_bar(aes(fill = factor(Survived, 
-                             levels = c(0,1), 
-                             labels = c("No", "Yes")), Pclass), 
-           position = "fill") +
-  scale_fill_manual(values = c("black", "lightblue")) +
-  labs(fill = "Survived",
-       y = "Proportion",
-       x = "Passenger class",
-       title = "Survival rates by passenger class")
-```
 
 # Discussion
 Our goal for this project was to predict Tesla's stock price based on the 
