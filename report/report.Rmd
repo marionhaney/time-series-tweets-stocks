@@ -192,6 +192,10 @@ Most negative day
 daily_sentiment[which.min(daily_sentiment$daily_sentiment),]
 ```
 
+
+
+# Results
+
 ```{r}
 df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_yfinance_data.csv") %>%
   filter(Stock.Name == 'TSLA') %>%
@@ -202,6 +206,7 @@ df$Returns <- c(diff(log(df$Adj.Close)), NA)
 stock <- data.frame(df)
 stock <- stock %>% na.omit()
 ```
+
 ```{r}
 plot(stock$Returns, main="TSLA Log Returns")
 par(mfrow=c(1,1))
@@ -210,6 +215,7 @@ pacf(stock$Returns, main="PACF of TSLA Log Returns", na.action = na.pass)
 acf(stock$Returns^2, main="ACF of TSLA Log Returns^2", na.action = na.pass)
 pacf(stock$Returns^2, main="PACF of TSLA Log Returns^2", na.action = na.pass)
 ```
+
 ```{r}
 suppressWarnings(library(forecast))
 
@@ -281,9 +287,6 @@ model <- lm(daily_sentiment ~ Returns + Returns_l1 + Returns_l2 + daily_sentimen
 summary(model)
 ```
 
-
-# Results
-
 Text example that references Figure \@ref(fig:fig-example).
 
 ```{r fig-example, fig.cap = "Survival rates across different passenger classes. This figure does not tell the full story as Table 1 shows that more of the lower class passengers were male."}
@@ -318,8 +321,6 @@ returns and past daily sentiment granger causes current daily sentiment (that
 means that past returns and past daily sentiment can be used to predict the 
 daily sentiment for the current day). What we would have wanted is to use past
 returns and past daily sentiment to predict current returns. 
-
-
 
 
 ## Conclusion
