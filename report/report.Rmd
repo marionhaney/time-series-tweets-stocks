@@ -310,17 +310,26 @@ Our goal for this project was to predict Tesla's stock price based on the
 sentiment of the tweets. For the first linear model, we are predicting returns based 
 on past returns, current daily sentiment, past daily sentiment. We see only 
 one star, which means none of the other features have a statistically 
-significant coefficient other than l2 daily sentiment which has tiny 
+significant coefficient other than L2 daily sentiment which has tiny 
 coefficient of 0.02. This means there is a small correlation between returns 
-and l2 daily sentiment. In the second linear model, we are predicting daily 
+and L2 daily sentiment. In the second linear model, we are predicting daily 
 sentiment using returns, past returns, past daily sentiment. Almost 
 all of the features are statistically significant value other than current 
-returns. This means that we can predict the sentiment with an adjusted r2 of 
+returns. This means that we can predict the sentiment with an adjusted $R^2$ of 
 10%, these features account for 10% of the variability of daily sentiment. Past 
-returns and past daily sentiment granger causes current daily sentiment (that 
-means that past returns and past daily sentiment can be used to predict the 
-daily sentiment for the current day). What we would have wanted is to use past
-returns and past daily sentiment to predict current returns. 
+returns and past daily sentiment Granger causes current daily sentiment, i.e.
+past returns and past daily sentiment can be used to predict the 
+daily sentiment for the current day. However, our original hypothesis was that 
+we would be able to predict returns and stock price using past returns and 
+daily sentiment, which is the opposite direction of Granger causality.
+
+The findings from our model indicate a limited capacity for using Tweet 
+sentiment and frequency to predict Tesla's stock price. The significant but 
+minimal correlation found in L2 daily sentiment suggests that while some 
+predictive power exists, it is not strong enough to influence financial 
+decisions effectively. The ability to predict daily sentiment from past 
+stock prices and sentiment highlights potential areas for deeper exploration 
+into the dynamics between social media and financial markets.
 
 
 ## Conclusion
@@ -332,11 +341,20 @@ by the lagged 1 or 2 values of the stock price or daily sentiment.
 
 
 ## Future Work
-- Stock prices are expected to increase over time. 
-- Incorporate indicator of overall market performance into the model.
-- Negative Tweets/news events may only correspond to temporary dips in stock price, suggesting longer lags should be used for forecasting.
-- Additional analysis with Tweet engagement along with sentiment score.
-- VAR did not determine number of Tweets per day using sentiment score useful, but engagement levels (likes, retweets, views, etc.) may be more predictive of stock price.
+
+As we move forward, our project will concentrate on enhancing the predictive 
+models and broadening the analytical scope to better understand the 
+relationship between social media activities and stock market behavior. 
+Future efforts will include incorporating broader market performance 
+indicators to understand Tesla’s stock movements within the larger financial 
+ecosystem. We will also explore longer temporal analyses to determine whether 
+the effects of negative social media events on stock prices are only temporary 
+or if they have a lasting impact. Additionally, we plan to incorporate
+Tweet engagement metrics such as likes, retweets, and views, which may offer 
+deeper insights into how social media dynamics can influence stock price
+movements. Through these improvements, we aim to build stronger predictive 
+tools for financial market analysis, refining our approach to use the 
+predictive power of social media sentiment more effectively.
 
 
 ...
