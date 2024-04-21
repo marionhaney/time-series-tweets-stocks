@@ -53,14 +53,16 @@ collected (09-30-2021 to 09-30-2022). From the tweets, we assign sentiment
 scores based on the positive and negative language used from 
 the text of the tweets, giving us a measurable proxy for public opinion. 
 To measure the financial health of Tesla, we observe its adjusted closing 
-stock price over same the year. 
+stock price and returns over same the year. 
 
 We chose Tesla because of our background knowledge of its popularity within the 
 public eye, giving us a wealth of positive and negative examples for sentiment 
 analysis. Also, Tesla's stock TSLA is a notably volatile stock, jumping between 
-$\209.38$ and $\$409.97$ several times during the year of data.
+$\$209.38$ and $\$409.97$ several times during the year of data.
 
-We engage in time series analysis and attempt to u
+We engage in time series analysis and attempt to investigate a potential 
+relationship between Tesla's Twitter sentiment and stock returns on a 
+given day over the year of data.
 
 
 ## Research Questions
@@ -408,7 +410,7 @@ sentiment.
 
 As we move forward, our project will concentrate on enhancing the predictive 
 models and broadening the analytical scope to better understand the 
-relationship between social media activities and stock market behavior. 
+relationship between public opinion and stock market behavior. 
 Future efforts will include incorporating broader market performance 
 indicators to understand Tesla’s stock movements within the larger financial 
 ecosystem. We will also explore longer temporal analyses to determine whether 
