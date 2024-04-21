@@ -1,6 +1,6 @@
 ---
 title: "Modeling Tesla Stock Price Using Tweets"
-author: "Tilina Alzaben, Jay Chung, Marion Haney, Divya Rao"
+author: "Tilina Alzaben, Jihyo Chung, Marion Haney, Divya Rao"
 date: "04-21-2024"
 documentclass: article
 geometry: margin=1in
@@ -333,6 +333,16 @@ model <- lm(daily_sentiment ~ Returns + Returns_l1 + Returns_l2 + daily_sentimen
 
 summary(model)
 ```
+
+Based on the Garch(1,1) fit, we see that only the GARCH coefficient of 0.939 is significant at $alpha=0.05$ level($p \approx 0$). This model suggests that the  volatility of the Tesla's stock returns is best predicted by the lagged conditional variance since other coefficients are not statistically significant. If we take a look at the conditional volatility plot, we indeed see that the conditional volatility is in different clusters of high and low volatility, meaning that it exhibits volatility clustering.
+
+Going further into modeling the Tesla's stock price, we used the lag 1 and lag 2 terms of the returns, and also the lag 1 and lag 2 of the daily sentiment scores of the tweets. Our model is:
+$$\text{Return} = \beta_0 + \beta_1\text{Return}_1 + \beta_2\text{Return}_2+ \beta_3\text{sentiment} + \beta_4\text{sentiment}_1 + \beta_5\text{sentiment}_2 $$
+Based on the output, we see that only the lag 2 term for daily sentiment score is significant with estimate of 0.02($p$=0.0405). The adjusted R squared value is 0.001734, which means that we can only explain the 0.1734% of the variability in the response value. Thus, this model is not so helpful in predicting the return.
+
+For predicting the daily sentiment score based on its previous lagged terms and the returns, the model is:
+$$\text{sentiment} = \beta_0 + \beta_1\text{sentiment}_1 + \beta_2\text{sentiment}_2+ \beta_3\text{Return} + \beta_4\text{Return}_1 + \beta_5\text{Return}_2$$
+The lagged 1 and 2 terms of both returns and daily sentiment score are significant, which intuitively makes sense. However, this model is not as useful since we can't make profit off of predicting the sentiment as oppsed to predicting the stock returns. Further is discussed in discussion section.
 
 
 # Discussion
