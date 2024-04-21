@@ -35,17 +35,50 @@ suppressMessages(library(fGarch))
 
 # Introduction
 
+Public opinion of a company can be beneficial or harmful to a company's 
+image and may also affect their sales or profits. Thus, every large company 
+hires employees to benefit their branding, marketing, and public communications. 
+We set to investigate if we can quantify a relationship between a company's 
+public image and their financial health using the case study of Tesla.
+
+Tesla, a company which specializes in electric vehicles, is currently led by 
+Elon Musk, who is often intertwined with the company's public image. Musk can
+be considered a public relations nightmare, engaging in Twitter rants and having
+a lack of filter that often leads to controversies and speculation.
+
+To measure public opinion, we use textual data gathered from Twitter, a 
+text-based social media with millions of English-speaking users. Tweets 
+mentioning Tesla or the company's stock ticker, TSLA, over one year were 
+collected (09-30-2021 to 09-30-2022). From the tweets, we assign sentiment 
+scores based on the positive and negative language used from 
+the text of the tweets, giving us a measurable proxy for public opinion. 
+To measure the financial health of Tesla, we observe its adjusted closing 
+stock price over same the year. 
+
+We chose Tesla because of our background knowledge of its popularity within the 
+public eye, giving us a wealth of positive and negative examples for sentiment 
+analysis. Also, Tesla's stock TSLA is a notably volatile stock, jumping between 
+$\209.38$ and $\$409.97$ several times during the year of data.
+
+We engage in time series analysis and attempt to u
+
+
 ## Research Questions
-- Do the frequency and sentiment of Tesla-related tweets have a relationship with Tesla’s stock returns?
-- Can we use frequency and sentiment of tweets mentioning Tesla to forecast Tesla’s stock returns?
+- Does sentiment of Tesla-related tweets have a relationship with Tesla’s stock returns on a given day?
+- Can we use the sentiment of tweets mentioning Tesla to forecast Tesla’s stock returns on a given day?
 
 ## Data
-For this analysis, we utilized two datasets from Kaggle.  
-Twitter tweets: 80793 tweets, 25 companies
-Stock Market Data: Daily close price of stock for same 25 companies
-Companies are the top 25 “most watched” stocks from Yahoo Finance
-Filtered to only tweets that mention Tesla or TSLA stock
-46% of the tweets in data mentioned TSLA (37422 tweets)
+For this analysis, we utilized two related datasets from Kaggle.  
+
+Twitter tweets: 80793 tweets, 25 companies (including Tesla)
+
+Stock Market Data: Daily close price of stock for the same 25 companies
+
+Companies are the top 25 “most watched” stocks from Yahoo Finance and we 
+filtered our data to only include tweets that mention Tesla or TSLA stock.
+This left us with 46% of the tweets in data mentioned TSLA (37422 tweets) 
+across the year of data collection.
+
 Date range: 09-30-2021 to 09-30-2022 (excluding weekends).
 
 
