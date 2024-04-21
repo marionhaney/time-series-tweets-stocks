@@ -19,7 +19,13 @@ output:
 knitr::opts_chunk$set(message = FALSE) # include this if you don't want markdown to knit messages
 knitr::opts_chunk$set(warning = FALSE) # include this if you don't want markdown to knit warnings
 knitr::opts_chunk$set(echo = FALSE) # set echo = FALSE to hide code from output
-
+suppressMessages(library(tidyverse))
+suppressMessages(library(lubridate))
+suppressMessages(library(tidytext))
+suppressMessages(library(textdata))
+suppressMessages(library(dplyr))
+suppressMessages(library(quantmod))
+suppressMessages(library(fGarch))
 ```
 
 # Executive summary {-}
@@ -68,9 +74,11 @@ tesla_ts <- ts(num_tweets_tesla$num_tweets,
 ```
 
 ## Number of Tesla Tweets Per Day
+
 Our data included tweets from 09-30-2021 to 09-30-2022 (excluding weekends) 
-which mentioned either Tesla's stock ticker or the company name itself. 
-Here, we view the number of tweets mentioning Tesla per day plotted over time
+which mentioned either Tesla's stock ticker or the company name itself. Our 
+data included 37,422 tweets regarding Tesla over the year. Here, we view the
+number of tweets mentioning Tesla per day plotted over time
 along with the ACF and PACF plots of the time series.
 
 ```{r}
@@ -100,16 +108,6 @@ the fluctuating number of Tesla tweets is accounted for.
 
 ## Daily Sentiment of Tesla Tweets
 
-
-
-
-
-## Tesla Stock Price and Returns
-
-
-
-## Sentiment Analysis
-
 For our analysis, we wanted to get a sentiment score for each 
 tweet. Our approach involved breaking the tweet into a bag of words 
 representation, where each word is given a sentiment score of 1 if it is 
@@ -118,76 +116,18 @@ word scores were then summed into a sentiment score for each tweet. Finally,
 the sentiment scores were averaged into a daily tweet sentiment score for the
 day. 
 
-## auto.arima()
-The auto.arima() function was applied on the squared returns, which is 
-the difference of the log of the adjusted closing price squared. This 
-helped identify if there was autoregression or moving average pattern 
-in the votatility of the returns and helps determine the order of
-the GARCH model. 
-
-## GARCH Model
-Based on the non-constant variance and non-stationarity seen from the 
-EDA, we decided to use a GARCH model. A GARCH (generalized autoregressive 
-conditionally heteroskedastic) model uses values of the past observations and 
-variances to model the variance at time t. GARCH is used commonly with financial
-data because of the high volatility. Since we got the order of the
-model from running auto.arima(), we decided to fit a GARCH(1, 1) model to 
-returns, the difference of the log of the adjusted closing price.
-
-## VAR
-We used a VAR (Vector Autoregression) model for feature selection for 
-the two linear models. After running the VARselect() function, we found that 
-the lagged values of l1 and l2 and lagged values of returns.
-
-
-
-Text example that references Table \@ref(tab:table-example).
-
-```{r table-example}
-library(pander)
-library(tidyverse)
-library(reshape2)
-library(kableExtra)
-library(knitr)
-
-# Titanic table
-
-titantic <- read_csv(paste0("https://raw.githubusercontent.com/",
-                            "benjaminleroy/stat315summer_data/",
-                            "master/assignments/assignment03/titanic.csv"))
-titantic %>% group_by(Pclass, Sex) %>%
-  summarize(t = n()) %>% dcast(Pclass ~ Sex) %>%
-  rename(`Passenger class` = Pclass) %>%
-  kable(format = "latex",
-        caption = paste("Passenger gender and class divisions on the Titanic.",
-                        "More 3rd class passengers were males seeking a",
-                        "better life."),
-        booktabs = T) %>%
-  kable_styling(latex_options = "HOLD_position")
-```
-
-
 ```{r}
-suppressMessages(library(tidyverse))
-suppressMessages(library(lubridate))
-suppressMessages(library(tidytext))
-suppressMessages(library(textdata))
-suppressMessages(library(dplyr))
-suppressMessages(library(quantmod))
-suppressMessages(library(fGarch))
-
-df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv")  %>%
+df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")  %>%
   filter(Stock.Name == 'TSLA') %>%
   mutate(Tweet.ID = row_number()) %>%
   dplyr::select(Tweet.ID, Date, Tweet)
-dim(df)
-names(df)
+#dim(df)
+#names(df)
 
 df$Date <-  ymd(substr(df$Date, 1, 10))
 tweets <- data.frame(df)
 
 ```
-
 
 ```{r}
 # Sentiment analysis
@@ -206,8 +146,6 @@ tweet_tokens <- tweets %>%
   unnest_tokens(word, Tweet)  
 
 sentiments <- get_sentiments("bing") %>% mutate(sentiment_score = map_bing_sentiment(sentiment))
-#sentiments <- get_sentiments("afinn") %>% mutate(sentiment_score = value)
-#sentiments <- get_sentiments("nrc") %>% mutate(sentiment_score = map_nrc_sentiment(sentiment))
 
 tweets_sentiment <- tweet_tokens %>%
   inner_join(sentiments, by = "word", relationship = "many-to-many")  %>%
@@ -222,38 +160,12 @@ daily_sentiment <- tweets_sentiment_summary  %>%
   summarise(daily_sentiment = mean(sentiment_score))
 ```
 
-Most positive tweet
-```{r}
-most_pos_twid <- 
-  tweets_sentiment_summary[which.max(tweets_sentiment_summary$sentiment_score),"Tweet.ID"]
-tweets[most_pos_twid$Tweet.ID,]$Tweet
-max(tweets_sentiment_summary$sentiment_score)
-```
-
-Most negative tweet
-```{r}
-most_neg_twid <- 
-  tweets_sentiment_summary[which.min(tweets_sentiment_summary$sentiment_score),"Tweet.ID"]
-tweets[most_neg_twid$Tweet.ID,]$Tweet
-min(tweets_sentiment_summary$sentiment_score)
-```
-
-Most positive day
-```{r}
-daily_sentiment[which.max(daily_sentiment$daily_sentiment),]
-```
-
-Most negative day
-```{r}
-daily_sentiment[which.min(daily_sentiment$daily_sentiment),]
-```
 
 
-
-# Results
+## Tesla Stock Price and Returns
 
 ```{r}
-df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_yfinance_data.csv") %>%
+df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_yfinance_data.csv") %>%
   filter(Stock.Name == 'TSLA') %>%
   dplyr::select(Date, Adj.Close)
 df$Date <- as.Date(df$Date)
@@ -281,6 +193,33 @@ arma_rt_squared <- auto.arima(stock$Returns^2, max.p = 5, max.q = 5, max.order =
 summary(arma_rt_squared)
 ```
 
+
+
+## auto.arima()
+The auto.arima() function was applied on the squared returns, which is 
+the difference of the log of the adjusted closing price squared. This 
+helped identify if there was autoregression or moving average pattern 
+in the votatility of the returns and helps determine the order of
+the GARCH model. 
+
+## GARCH Model
+Based on the non-constant variance and non-stationarity seen from the 
+EDA, we decided to use a GARCH model. A GARCH (generalized autoregressive 
+conditionally heteroskedastic) model uses values of the past observations and 
+variances to model the variance at time t. GARCH is used commonly with financial
+data because of the high volatility. Since we got the order of the
+model from running auto.arima(), we decided to fit a GARCH(1, 1) model to 
+returns, the difference of the log of the adjusted closing price.
+
+## VAR
+We used a VAR (Vector Autoregression) model for feature selection for 
+the two linear models. After running the VARselect() function, we found that 
+the lagged values of l1 and l2 and lagged values of returns.
+
+
+
+# Results
+
 ```{r}
 stock_ts <- ts(stock$Returns, 
                start=c(2021,9), 
@@ -295,7 +234,6 @@ plot(garch_model, which = 2)
 par(mfrow=c(1,1))
 ```
 
-#### Combine data from stock, daily_sentiment
 
 ```{r}
 combined_data <- left_join(stock, daily_sentiment, by = "Date")
@@ -343,6 +281,8 @@ model <- lm(daily_sentiment ~ Returns + Returns_l1 + Returns_l2 + daily_sentimen
 summary(model)
 ```
 
+
+##### Example from Mikael
 Text example that references Figure \@ref(fig:fig-example).
 
 ```{r fig-example, fig.cap = "Survival rates across different passenger classes. This figure does not tell the full story as Table 1 shows that more of the lower class passengers were male."}
