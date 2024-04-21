@@ -28,23 +28,85 @@ knitr::opts_chunk$set(echo = FALSE) # set echo = FALSE to hide code from output
 
 # Introduction
 
-Research Questions:
-- Do the frequency and sentiment of Tesla-related Tweets have a relationship with Tesla’s stock close price?
-- Can we use frequency and sentiment of Tweets mentioning Tesla to forecast Tesla’s stock price?
+## Research Questions
+- Do the frequency and sentiment of Tesla-related tweets have a relationship with Tesla’s stock close price?
+- Can we use frequency and sentiment of tweets mentioning Tesla to forecast Tesla’s stock price?
 
-Data
+## Data
 For this analysis, we utilized two datasets from Kaggle.  
-Twitter Tweets: 80793 Tweets, 25 companies
+Twitter tweets: 80793 tweets, 25 companies
 Stock Market Data: Daily close price of stock for same 25 companies
 Companies are the top 25 “most watched” stocks from Yahoo Finance
-Filtered to only Tweets that mention Tesla or TSLA stock
-46% of the Tweets in data mentioned TSLA (37422 Tweets)
+Filtered to only tweets that mention Tesla or TSLA stock
+46% of the tweets in data mentioned TSLA (37422 tweets)
 Date range: 09-30-2021 to 09-30-2022 (excluding weekends).
 
 
 ...
 
 # Methods
+
+## Exploratory Data Analysis
+
+Exploratory Data Analysis (EDA) was conducted for deciding on reasonable 
+data transformations and analysis, determining which type of model to use, and 
+choosing the parameters for these models. 
+
+```{r}
+# Gather stock tweets data
+tweets <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")
+# Retaining the year, month, day
+tweets$day <- as.Date(tweets$Date,"%Y-%m-%d %H:%M:%S")
+# Filter to just Tesla tweets
+tesla <- filter(tweets, tweets$Company.Name == "Tesla, Inc.")
+num_tweets_tesla <- data.frame(table(tesla$day))
+names(num_tweets_tesla) <- c("day", "num_tweets")
+# Time series for number of Tesla tweets per day
+tesla_ts <- ts(num_tweets_tesla$num_tweets, 
+                    start = c(2021, 273),
+                    frequency = 365)
+```
+
+## Number of Tesla Tweets Per Day
+Our data included tweets from 09-30-2021 to 09-30-2022 (excluding weekends) 
+which mentioned either Tesla's stock ticker or the company name itself. 
+Here, we view the number of tweets mentioning Tesla per day plotted over time
+along with the ACF and PACF plots of the time series.
+
+```{r}
+plot(tesla_ts, main = "Number of Tesla Tweets \n Per Day",
+     ylab = "Number of Tweets")
+```
+
+```{r}
+par(mfrow=c(1,2))
+acf(tesla_ts, main = "ACF of Number of Tesla Tweets",
+    ylab = "ACF")
+pacf(tesla_ts, main = "PACF of Number of Tesla Tweets",
+    ylab = "PACF")
+```
+
+The time series of the number of Tesla tweets per day shows non-stationary 
+characteristics, with noticeable fluctuations and periodic spikes indicating 
+changes in the mean and variance over time. The ACF plot specifically shows 
+possible seasonality with four clusters of ACF spikes over the time period of 
+the data. These spikes in the number of tweets mentioning Tesla appear to 
+occur approximately every three months.
+
+Since the number of Tesla tweets varies per day in a periodic manner, we 
+decided to use averaging in our calculation of daily tweet sentiment. Thus, 
+the fluctuating number of Tesla tweets is accounted for.
+
+
+## Daily Sentiment of Tesla Tweets
+
+
+
+
+
+## Tesla Stock Price and Returns
+
+
 
 ## Sentiment Analysis
 
@@ -55,12 +117,6 @@ positive, -1 if it is negative, and 0 otherwise (neutral). These individual
 word scores were then summed into a sentiment score for each tweet. Finally, 
 the sentiment scores were averaged into a daily tweet sentiment score for the
 day. 
-
-## Exploratory Data Analysis
-
-Exploratory Data Analysis (EDA) was conducted for deciding on reasonable 
-data transformations and analysis, determining which type of model to use, and 
-choosing the parameters for these models. 
 
 ## auto.arima()
 The auto.arima() function was applied on the squared returns, which is 
@@ -166,7 +222,7 @@ daily_sentiment <- tweets_sentiment_summary  %>%
   summarise(daily_sentiment = mean(sentiment_score))
 ```
 
-Most positive Tweet
+Most positive tweet
 ```{r}
 most_pos_twid <- 
   tweets_sentiment_summary[which.max(tweets_sentiment_summary$sentiment_score),"Tweet.ID"]
@@ -174,7 +230,7 @@ tweets[most_pos_twid$Tweet.ID,]$Tweet
 max(tweets_sentiment_summary$sentiment_score)
 ```
 
-Most negative Tweet
+Most negative tweet
 ```{r}
 most_neg_twid <- 
   tweets_sentiment_summary[which.min(tweets_sentiment_summary$sentiment_score),"Tweet.ID"]
@@ -323,7 +379,7 @@ daily sentiment for the current day. However, our original hypothesis was that
 we would be able to predict returns and stock price using past returns and 
 daily sentiment, which is the opposite direction of Granger causality.
 
-The findings from our model indicate a limited capacity for using Tweet 
+The findings from our model indicate a limited capacity for using tweet 
 sentiment and frequency to predict Tesla's stock price. The significant but 
 minimal correlation found in L2 daily sentiment suggests that while some 
 predictive power exists, it is not strong enough to influence financial 
@@ -350,7 +406,7 @@ indicators to understand Tesla’s stock movements within the larger financial
 ecosystem. We will also explore longer temporal analyses to determine whether 
 the effects of negative social media events on stock prices are only temporary 
 or if they have a lasting impact. Additionally, we plan to incorporate
-Tweet engagement metrics such as likes, retweets, and views, which may offer 
+tweet engagement metrics such as likes, retweets, and views, which may offer 
 deeper insights into how social media dynamics can influence stock price
 movements. Through these improvements, we aim to build stronger predictive 
 tools for financial market analysis, refining our approach to use the 
