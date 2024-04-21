@@ -36,8 +36,8 @@ suppressMessages(library(fGarch))
 # Introduction
 
 ## Research Questions
-- Do the frequency and sentiment of Tesla-related tweets have a relationship with Tesla’s stock close price?
-- Can we use frequency and sentiment of tweets mentioning Tesla to forecast Tesla’s stock price?
+- Do the frequency and sentiment of Tesla-related tweets have a relationship with Tesla’s stock returns?
+- Can we use frequency and sentiment of tweets mentioning Tesla to forecast Tesla’s stock returns?
 
 ## Data
 For this analysis, we utilized two datasets from Kaggle.  
@@ -250,7 +250,7 @@ GARCH(1, 1) model to returns, the difference of the log of the adjusted
 closing price.
 
 ### auto.arima()
-The auto.arima() function was applied on the squared returns, which is 
+The auto.arima() function was applied on the squared logged returns, which is 
 the difference of the log of the adjusted closing price squared. This 
 helped identify if there was autoregression or moving average pattern 
 in the votatility of the returns and helps determine the order of
@@ -337,17 +337,17 @@ summary(model)
 
 # Discussion
 Our goal for this project was to predict Tesla's stock price based on the 
-sentiment of the tweets. For the first linear model, we are predicting returns based 
-on past returns, current daily sentiment, past daily sentiment. We see only 
-one star, which means none of the other features have a statistically 
-significant coefficient other than L2 daily sentiment which has tiny 
-coefficient of 0.02. This means there is a small correlation between returns 
-and L2 daily sentiment. In the second linear model, we are predicting daily 
-sentiment using returns, past returns, past daily sentiment. Almost 
-all of the features are statistically significant value other than current 
-returns. This means that we can predict the sentiment with an adjusted $R^2$ of 
-10%, these features account for 10% of the variability of daily sentiment. Past 
-returns and past daily sentiment Granger causes current daily sentiment, i.e.
+sentiment of the tweets. For the first linear model, we are predicting returns
+based on past returns, current daily sentiment, past daily sentiment. We see 
+only one statistically significant coefficient, which means none of the other 
+features have a statistically significant coefficient other than L2 daily 
+sentiment. However, L2 daily sentiment has a small magnitude of 0.02, reflecting 
+a weak correlation between returns and L2 daily sentiment. In the second linear 
+model, we are predicting daily sentiment using returns, past returns, past 
+daily sentiment. Almost all of the features are statistically significant value 
+other than current returns. The adjusted $R^2$ of 10% suggests that these 
+features account for 10% of the variability of daily sentiment. Past returns 
+and past daily sentiment Granger causes current daily sentiment, i.e.
 past returns and past daily sentiment can be used to predict the 
 daily sentiment for the current day. However, our original hypothesis was that 
 we would be able to predict returns and stock price using past returns and 
@@ -363,11 +363,12 @@ into the dynamics between social media and financial markets.
 
 
 ## Conclusion
-Stock price cannot be predicted based on the current or lagged 1 values of 
-daily sentiment or lagged 1 or 2 values for returns. The coefficient for lagged 
-2 daily sentiment is statistically significant but too small to be useful. Daily 
-sentiment cannot be predicted based on current stock price but CAN be explained 
-by the lagged 1 or 2 values of the stock price or daily sentiment. 
+TSLA Stock returns cannot be predicted based on the current or lagged 1 values 
+of daily sentiment or lagged 1 or 2 values for returns. The coefficient for 
+lagged 2 daily sentiment is statistically significant but too small to be 
+useful. Daily sentiment cannot be predicted based on current stock returns but 
+can be explained by the lagged 1 or 2 values of the stock price or daily 
+sentiment. 
 
 
 ## Future Work
