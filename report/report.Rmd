@@ -108,13 +108,15 @@ the fluctuating number of Tesla tweets is accounted for.
 
 ## Daily Sentiment of Tesla Tweets
 
-For our analysis, we wanted to get a sentiment score for each 
-tweet. Our approach involved breaking the tweet into a bag of words 
+For our analysis, we calculated a daily score representing the average 
+sentiment (positive or negative) for Tesla tweets posted on the given day.
+Our approach involved breaking each tweet into a bag of words 
 representation, where each word is given a sentiment score of 1 if it is 
 positive, -1 if it is negative, and 0 otherwise (neutral). These individual
-word scores were then summed into a sentiment score for each tweet. Finally, 
-the sentiment scores were averaged into a daily tweet sentiment score for the
-day. 
+word scores were then summed into a sentiment score for each tweet. The 
+sentiment scores per tweet ranged from -9 to 9. Finally, the individual 
+tweet sentiment scores were averaged into a daily tweet sentiment score for the 
+day. The daily sentiment scores ranged from -0.575 to 1.65.
 
 ```{r}
 df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")  %>%
@@ -160,6 +162,30 @@ daily_sentiment <- tweets_sentiment_summary  %>%
   summarise(daily_sentiment = mean(sentiment_score))
 ```
 
+Here, we can view the daily sentiment of tweets over the year of our data 
+along with the ACF and PACF.
+```{r}
+sentiment_ts <- ts(daily_sentiment$daily_sentiment, 
+                    start = c(2021, 273),
+                    frequency = 365)
+plot(sentiment_ts, main = "Daily Sentiment of Tesla Tweets",
+     ylab = "Average Daily Sentiment Score")
+```
+
+```{r}
+par(mfrow=c(1,2))
+acf(sentiment_ts, main = "ACF of Daily Sentiment",
+    ylab = "ACF")
+pacf(sentiment_ts, main = "PACF of Daily Sentiment",
+    ylab = "PACF")
+```
+
+Similarly to the number of tweets per day, we see four sections of ACF spikes 
+approximately 3 months apart, suggesting seasonality. However, the magnitude of 
+the spikes for daily sentiment of tweets is less severe than the magnitude of 
+the corresponding spikes for the number of tweets per day. This is likely due to 
+the averaging of each individual tweet's sentiment score to produce a daily 
+metric.
 
 
 ## Tesla Stock Price and Returns
@@ -169,7 +195,6 @@ df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/
   filter(Stock.Name == 'TSLA') %>%
   dplyr::select(Date, Adj.Close)
 df$Date <- as.Date(df$Date)
-head(df)
 df$Returns <- c(diff(log(df$Adj.Close)), NA)
 stock <- data.frame(df)
 stock <- stock %>% na.omit()
@@ -184,6 +209,17 @@ acf(stock$Returns^2, main="ACF of TSLA Log Returns^2", na.action = na.pass)
 pacf(stock$Returns^2, main="PACF of TSLA Log Returns^2", na.action = na.pass)
 ```
 
+
+## GARCH model
+- why did we choose GARCH
+
+## auto.arima()
+The auto.arima() function was applied on the squared returns, which is 
+the difference of the log of the adjusted closing price squared. This 
+helped identify if there was autoregression or moving average pattern 
+in the votatility of the returns and helps determine the order of
+the GARCH model. 
+
 ```{r}
 suppressWarnings(library(forecast))
 
@@ -192,15 +228,6 @@ arma_rt_squared <- auto.arima(stock$Returns^2, max.p = 5, max.q = 5, max.order =
                               stepwise = F, approximation = F)
 summary(arma_rt_squared)
 ```
-
-
-
-## auto.arima()
-The auto.arima() function was applied on the squared returns, which is 
-the difference of the log of the adjusted closing price squared. This 
-helped identify if there was autoregression or moving average pattern 
-in the votatility of the returns and helps determine the order of
-the GARCH model. 
 
 ## GARCH Model
 Based on the non-constant variance and non-stationarity seen from the 
