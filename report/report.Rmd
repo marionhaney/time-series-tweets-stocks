@@ -27,6 +27,7 @@ suppressMessages(library(textdata))
 suppressMessages(library(dplyr))
 suppressMessages(library(quantmod))
 suppressMessages(library(fGarch))
+suppressMessages(library(pander))
 ```
 
 # Executive summary {-}
@@ -297,7 +298,7 @@ suppressWarnings(library(forecast))
 arma_rt_squared <- auto.arima(stock$Returns^2, max.p = 5, max.q = 5, max.order = 10,
                               stationary = T, seasonal = F, trace = F,
                               stepwise = F, approximation = F)
-summary(arma_rt_squared)
+#summary(arma_rt_squared)
 ```
 
 ## VAR
@@ -314,7 +315,7 @@ stock_ts <- ts(stock$Returns,
                start=c(2021,9), 
                frequency=365)  
 garch_model <- garchFit(~ garch(1,1), data=stock_ts, trace=FALSE)
-summary(garch_model)
+#summary(garch_model)
 
 par(mfrow=c(1,1))
 plot(garch_model, which = 1)
@@ -328,7 +329,7 @@ par(mfrow=c(1,1))
 combined_data <- left_join(stock, daily_sentiment, by = "Date")
 #cor(combined_data$daily_sentiment, combined_data$Returns, use = "complete.obs")
 model <- lm(Returns ~ daily_sentiment, data = combined_data)
-summary(model)
+#pander(summary(model))
 ```
 
 ```{r}
@@ -343,7 +344,7 @@ optimal.lags <- lag.select$selection['AIC(n)']
 # Fit the VAR model
 var.model <- VAR(df, p = optimal.lags)
 
-summary(var.model)
+#pander(summary(var.model))
 ```
 
 ```{r}
@@ -360,13 +361,13 @@ combined_data <- combined_data %>%
 
 model <- lm(Returns ~ Returns_l1 + Returns_l2 + daily_sentiment + daily_sentiment_l1 + daily_sentiment_l2, data = combined_data)
 
-summary(model)
+pander(summary(model))
 ```
 
 ```{r}
 model <- lm(daily_sentiment ~ Returns + Returns_l1 + Returns_l2 + daily_sentiment_l1 + daily_sentiment_l2, data = combined_data)
 
-summary(model)
+pander(summary(model))
 ```
 
 Based on the Garch(1,1) fit, we see that only the GARCH coefficient of 0.939 is significant at $alpha=0.05$ level($p \approx 0$). This model suggests that the  volatility of the Tesla's stock returns is best predicted by the lagged conditional variance since other coefficients are not statistically significant. If we take a look at the conditional volatility plot, we indeed see that the conditional volatility is in different clusters of high and low volatility, meaning that it exhibits volatility clustering.
