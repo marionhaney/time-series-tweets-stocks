@@ -1,0 +1,109 @@
+---
+title: "Tesla Stock"
+author: "Tilina Alzaben"
+date: "2024-04-09"
+output: html_document
+---
+
+
+```{r}
+#install.packages("quantmod")
+library(quantmod)
+
+symbol <- "TSLA"
+start_date <- "2021-09-30"
+end_date <- "2022-09-29"
+
+# Get Tesla's stock data
+getSymbols(Symbols = symbol, src = "yahoo", from = start_date, to = end_date)
+
+# Convert into a time series object
+tsla_close_ts <- ts(TSLA$TSLA.Adjusted, start = c(2021, 9), end = c(2022, 9), frequency = 365)
+
+# Plot the time series
+plot(tsla_close_ts, 
+     xlab = "Date", 
+     ylab = "Adjusted Close Price", 
+     main = "Tesla Stock Adjusted Close Price")
+```
+```{r}
+acf(tsla_close_ts, 
+    main = "ACF of Tesla Stock",
+    ylab = "ACF")
+```
+
+```{r}
+pacf(tsla_close_ts, 
+     main = "PACF of Tesla Stock",
+     ylab = "PACF")
+```
+
+```{r}
+library(dplyr)
+library(quantmod)
+
+# Read the CSV file into a data frame
+tweets <- read.csv("data/stock_tweets.csv")
+
+# Filter rows where the company name is "Tesla, Inc."
+tesla <- tweets %>% 
+  filter(Company.Name == "Tesla, Inc.") %>%
+  mutate(day = as.Date(Date, "%Y-%m-%d %H:%M:%S"))
+
+# Count tweets per day
+num_tweets_tesla <- tesla %>%
+  group_by(day) %>%
+  summarise(num_tweets = n())
+
+# Get Tesla's stock data from Yahoo Finance
+getSymbols(Symbols = "TSLA", src = "yahoo", from = "2021-09-30", to = "2022-09-29")
+
+# Extract the adjusted close price and convert it into a data frame
+tsla_data <- data.frame(date = index(TSLA), Adjusted = TSLA$TSLA.Adjusted)
+
+# Merge tweet counts and stock prices
+combined_data <- merge(num_tweets_tesla, tsla_data, by.x = "day", by.y = "date")
+
+# Plot the data using ggplot2
+library(ggplot2)
+ggplot(combined_data, aes(x = num_tweets, y = TSLA.Adjusted)) +
+  geom_point() +
+  labs(x = "Number of Tweets", y = "Adjusted Close Price", title = "Relationship Between Tesla Tweets and Stock Price")
+
+```
+
+```{r}
+# Apply log transformation to the number of tweets and stock prices
+combined_data$log_num_tweets <- log(combined_data$num_tweets)
+combined_data$log_Adjusted <- log(combined_data$TSLA.Adjusted)
+
+# Plot the data with the log-transformed values
+ggplot(combined_data, aes(x = log_num_tweets, y = log_Adjusted)) +
+  geom_point() +
+  labs(x = "Log of Number of Tweets", y = "Log of Adjusted Close Price", title = "Log-Log Plot of Tesla Tweets and Stock Price")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
