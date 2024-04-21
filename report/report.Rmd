@@ -1,6 +1,7 @@
 ---
 title: "Modeling Tesla Stock Price Using Tweets"
-author: "Divya Rao, Jay Chung, Marion Haney, Tilina Alzaben"
+author: "Tilina Alzaben, Jay Chung, Marion Haney, Divya Rao"
+date: "04-21-2024"
 documentclass: article
 geometry: margin=1in
 output:
@@ -88,10 +89,8 @@ plot(tesla_ts, main = "Number of Tesla Tweets \n Per Day",
 
 ```{r}
 par(mfrow=c(1,2))
-acf(tesla_ts, main = "ACF of Number of Tesla Tweets",
-    ylab = "ACF")
-pacf(tesla_ts, main = "PACF of Number of Tesla Tweets",
-    ylab = "PACF")
+acf(tesla_ts, main = "ACF of Number of Tesla Tweets")
+pacf(tesla_ts, main = "PACF of Number of Tesla Tweets")
 ```
 
 The time series of the number of Tesla tweets per day shows non-stationary 
@@ -174,49 +173,81 @@ plot(sentiment_ts, main = "Daily Sentiment of Tesla Tweets",
 
 ```{r}
 par(mfrow=c(1,2))
-acf(sentiment_ts, main = "ACF of Daily Sentiment",
-    ylab = "ACF")
-pacf(sentiment_ts, main = "PACF of Daily Sentiment",
-    ylab = "PACF")
+acf(sentiment_ts, main = "ACF of Daily Sentiment")
+pacf(sentiment_ts, main = "PACF of Daily Sentiment")
 ```
 
-Similarly to the number of tweets per day, we see four sections of ACF spikes 
-approximately 3 months apart, suggesting seasonality. However, the magnitude of 
-the spikes for daily sentiment of tweets is less severe than the magnitude of 
-the corresponding spikes for the number of tweets per day. This is likely due to 
-the averaging of each individual tweet's sentiment score to produce a daily 
-metric.
+Similarly to the number of Tesla tweets per day, we observe non-stationary 
+characteristics for the daily sentiment of Tesla tweets. we see four sections of
+ACF spikes approximately 3 months apart, suggesting seasonality. However, the 
+magnitude of the spikes for daily sentiment of tweets is less severe than the 
+magnitude of the corresponding spikes for the number of tweets per day. This is
+potentially due to the averaging of each individual tweet's sentiment score to 
+produce a daily metric.
 
 
-## Tesla Stock Price and Returns
+## TSLA Stock Price and Returns
+
+We calculated the returns of the TSLA stock by differencing the adjusted 
+close price of TSLA to 1 degree.
 
 ```{r}
 df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_yfinance_data.csv") %>%
   filter(Stock.Name == 'TSLA') %>%
   dplyr::select(Date, Adj.Close)
 df$Date <- as.Date(df$Date)
+df$Returns <- c(diff(df$Adj.Close), NA)
+stock_ts <- ts(df$Returns, 
+                    start = c(2021, 273),
+                    frequency = 365)
 df$Returns <- c(diff(log(df$Adj.Close)), NA)
+stock_ts_lsq <- ts(df$Returns^2, 
+                    start = c(2021, 273),
+                    frequency = 365)
 stock <- data.frame(df)
 stock <- stock %>% na.omit()
 ```
 
 ```{r}
-plot(stock$Returns, main="TSLA Log Returns")
-par(mfrow=c(1,1))
-acf(stock$Returns, main="ACF of TSLA Log Returns", na.action = na.pass)
-pacf(stock$Returns, main="PACF of TSLA Log Returns", na.action = na.pass)
-acf(stock$Returns^2, main="ACF of TSLA Log Returns^2", na.action = na.pass)
-pacf(stock$Returns^2, main="PACF of TSLA Log Returns^2", na.action = na.pass)
+# EDA TSLA returns
+plot(stock_ts, main="TSLA Returns")
+par(mfrow=c(1,2))
+acf(stock_ts, main="ACF of TSLA Returns", na.action = na.pass)
+pacf(stock_ts, main="PACF of TSLA Returns", na.action = na.pass)
 ```
+
+For TSLA returns, we see slight non-stationary characteristics. The ACF and 
+PACF plots exhibit spikes outside the white noise error bounds at around 
+lag 0.02 and 0.05. The time series plot of TSLA returns also exhibits some 
+evidence of heteroskedasticity, with a truncated shape of the time series. The 
+earlier returns exhibit a wider variance than the later returns.
+
+Thus, we decided to square the logged returns to alleviate the slight 
+non-stationary characteristics and heteroskedasticity.
+
+```{r}
+plot(stock_ts_lsq, main="TSLA Squared Log Returns")
+par(mfrow=c(1,2))
+acf(stock_ts_lsq, main="ACF of TSLA \nSquared Log Returns", na.action = na.pass)
+pacf(stock_ts_lsq, main="PACF of TSLA \nSquared Log Returns", na.action = na.pass)
+```
+
+The square of logged TSLA returns exhibits only one ACF and PACF spike at 
+around lag 0.03 and the plot of the square of logged TSLA returns no longer 
+has a truncated shape.
+
+So, we continued with using the square of logged TSLA returns to represent the 
+measure of TSLA stock price in our model.
 
 ## GARCH Model
 Based on the non-constant variance and non-stationarity seen from the 
-EDA, we decided to use a GARCH model. A GARCH (generalized autoregressive 
-conditionally heteroskedastic) model uses values of the past observations and 
-variances to model the variance at time t. GARCH is used commonly with financial
-data because of the high volatility. Since we got the order of the
-model from running auto.arima(), we decided to fit a GARCH(1, 1) model to 
-returns, the difference of the log of the adjusted closing price.
+EDA for daily sentiment, we decided to use a GARCH model. A GARCH 
+(generalized autoregressive conditionally heteroskedastic) model uses values 
+of the past observations and variances to model the variance at time t. GARCH 
+is used commonly with financiald ata because of the high volatility. Since we 
+calculated the order of the model from running auto.arima(), we decided to fit a 
+GARCH(1, 1) model to returns, the difference of the log of the adjusted 
+closing price.
 
 ### auto.arima()
 The auto.arima() function was applied on the squared returns, which is 
@@ -260,8 +291,7 @@ par(mfrow=c(1,1))
 
 ```{r}
 combined_data <- left_join(stock, daily_sentiment, by = "Date")
-cor(combined_data$daily_sentiment, combined_data$Returns, use = "complete.obs")
-
+#cor(combined_data$daily_sentiment, combined_data$Returns, use = "complete.obs")
 model <- lm(Returns ~ daily_sentiment, data = combined_data)
 summary(model)
 ```
