@@ -17,9 +17,13 @@ output:
 ###########################
 
 # normally you'll want to include this with the libraries at the beginning of your document
-knitr::opts_chunk$set(message = FALSE) # include this if you don't want markdown to knit messages
-knitr::opts_chunk$set(warning = FALSE) # include this if you don't want markdown to knit warnings
-knitr::opts_chunk$set(echo = FALSE) # set echo = FALSE to hide code from output
+knitr::opts_chunk$set(
+  message = FALSE, # include this if you don't want markdown to knit messages
+  warning = FALSE, # include this if you don't want markdown to knit warnings
+  echo = FALSE, # set echo = FALSE to hide code from output
+  fig.height = 5,
+  fig.width = 7
+)
 suppressMessages(library(tidyverse))
 suppressMessages(library(lubridate))
 suppressMessages(library(tidytext))
@@ -32,7 +36,7 @@ suppressMessages(library(pander))
 
 # Executive summary {-}
 
-Our research investigated the correlation between public sentiment on Twitter and the financial performance of Tesla, analyzing 37,422 tweets along the company’s stock data from September 30, 2021, to September 30, 2022. We applied time series and sentiment analysis, using models like GARCH for volatility and VAR for feature selection. Our findings revealed only a weak statistically significant correlation between the sentiment of Tesla-related tweets and stock returns, particularly with a two-day lag in tweet sentiment showing a minimal predictive impact. This indicates that while there is some relationship between public sentiment and stock performance, its predictive power is limited for practical financial forecasting. Future research will aim to refine these models and include broader market indicators and tweet engagement metrics to enhance understanding and predictive accuracy of the impact of social media on stock prices. This study highlights the challenge of using social media sentiment as a reliable predictor for stock market behavior.
+Our research investigated the relationship between public opinion on Twitter and the financial performance of Tesla, analyzing 37,422 tweets along the company’s stock data from September 30, 2021, to September 30, 2022. We applied time series and sentiment analysis, using models like GARCH for volatility and VAR for feature selection. Our findings revealed only a weak statistically significant correlation between the sentiment of Tesla-related tweets and stock returns, particularly with a two-day lag in tweet sentiment showing a minimal predictive impact. This indicates that while there is some relationship between public sentiment and stock performance, its predictive power is limited for practical financial forecasting. Future research will aim to refine these models and include broader market indicators and tweet engagement metrics to enhance understanding and predictive accuracy of the impact of social media on stock prices. This study highlights the challenge of using social media sentiment as a reliable predictor for stock market behavior.
 
 
 # Introduction
@@ -125,8 +129,8 @@ plot(tesla_ts, main = "Number of Tesla Tweets \n Per Day",
 
 ```{r}
 par(mfrow=c(1,2))
-acf(tesla_ts, main = "ACF of Number of Tesla Tweets")
-pacf(tesla_ts, main = "PACF of Number of Tesla Tweets")
+acf(tesla_ts, main = "ACF of \nNumber of Tesla Tweets")
+pacf(tesla_ts, main = "PACF of \nNumber of Tesla Tweets")
 ```
 
 The time series of the number of Tesla tweets per day shows non-stationary 
