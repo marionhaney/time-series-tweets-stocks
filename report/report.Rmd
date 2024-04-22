@@ -32,7 +32,6 @@ suppressMessages(library(pander))
 
 # Executive summary {-}
 
-...
 
 # Introduction
 
@@ -67,25 +66,23 @@ given day over the year of data.
 
 
 ## Research Questions
-- Does sentiment of Tesla-related tweets have a relationship with Tesla’s stock returns on a given day?
-- Can we use the sentiment of tweets mentioning Tesla to forecast Tesla’s stock returns on a given day?
+
+The project aimed to answer two main questions: First, is there a relationship 
+between the sentiment of Tesla-related tweets and the company's stock returns 
+on any given day? Second, can the sentiment derived from tweets mentioning 
+Tesla be used to forecast the company's stock returns on a subsequent day? 
+
 
 ## Data
-For this analysis, we utilized two related datasets from Kaggle.  
-
-Twitter tweets: 80793 tweets, 25 companies (including Tesla)
-
-Stock Market Data: Daily close price of stock for the same 25 companies
-
-Companies are the top 25 “most watched” stocks from Yahoo Finance and we 
+For this analysis, we utilized two related datasets from Kaggle. The first
+dataset includes 80,793 tweets related to 25 different companies, while the 
+second provided daily closing stock prices for these same companies over a 
+period from September 30, 2021, to September 30, 2022. These companies are the 
+top 25 “most watched” stocks from Yahoo Finance and we 
 filtered our data to only include tweets that mention Tesla or TSLA stock.
 This left us with 46% of the tweets in data mentioned TSLA (37422 tweets) 
 across the year of data collection.
 
-Date range: 09-30-2021 to 09-30-2022 (excluding weekends).
-
-
-...
 
 # Methods
 
@@ -97,7 +94,7 @@ choosing the parameters for these models.
 
 ```{r}
 # Gather stock tweets data
-tweets <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")
+tweets <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv")
 # Retaining the year, month, day
 tweets$day <- as.Date(tweets$Date,"%Y-%m-%d %H:%M:%S")
 # Filter to just Tesla tweets
@@ -154,7 +151,7 @@ tweet sentiment scores were averaged into a daily tweet sentiment score for the
 day. The daily sentiment scores ranged from -0.575 to 1.65.
 
 ```{r}
-df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")  %>%
+df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv")  %>%
   filter(Stock.Name == 'TSLA') %>%
   mutate(Tweet.ID = row_number()) %>%
   dplyr::select(Tweet.ID, Date, Tweet)
@@ -228,7 +225,7 @@ We calculated the returns of the TSLA stock by differencing the adjusted
 close price of TSLA to 1 degree.
 
 ```{r}
-df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_yfinance_data.csv") %>%
+df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_yfinance_data.csv") %>%
   filter(Stock.Name == 'TSLA') %>%
   dplyr::select(Date, Adj.Close)
 df$Date <- as.Date(df$Date)
@@ -304,7 +301,7 @@ arma_rt_squared <- auto.arima(stock$Returns^2, max.p = 5, max.q = 5, max.order =
 ## VAR
 We used a VAR (Vector Autoregression) model for feature selection for 
 the two linear models. After running the VARselect() function, we found that 
-the lagged values of l1 and l2 and lagged values of returns.
+the lagged values of daily sentiment and lagged values of returns.
 
 
 
@@ -409,6 +406,7 @@ into the dynamics between social media and financial markets.
 
 
 ## Conclusion
+
 TSLA Stock returns cannot be predicted based on the current or lagged 1 values 
 of daily sentiment or lagged 1 or 2 values for returns. The coefficient for 
 lagged 2 daily sentiment is statistically significant but too small to be 
