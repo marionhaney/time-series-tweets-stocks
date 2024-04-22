@@ -94,7 +94,8 @@ choosing the parameters for these models.
 
 ```{r}
 # Gather stock tweets data
-tweets <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv")
+#tweets <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv")
+tweets <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")
 # Retaining the year, month, day
 tweets$day <- as.Date(tweets$Date,"%Y-%m-%d %H:%M:%S")
 # Filter to just Tesla tweets
@@ -151,7 +152,10 @@ tweet sentiment scores were averaged into a daily tweet sentiment score for the
 day. The daily sentiment scores ranged from -0.575 to 1.65.
 
 ```{r}
-df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv")  %>%
+#df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv") 
+df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")
+
+df <- df %>%
   filter(Stock.Name == 'TSLA') %>%
   mutate(Tweet.ID = row_number()) %>%
   dplyr::select(Tweet.ID, Date, Tweet)
@@ -225,7 +229,10 @@ We calculated the returns of the TSLA stock by differencing the adjusted
 close price of TSLA to 1 degree.
 
 ```{r}
-df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_yfinance_data.csv") %>%
+#df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_yfinance_data.csv") 
+df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_yfinance_data.csv")
+
+df <- df %>%
   filter(Stock.Name == 'TSLA') %>%
   dplyr::select(Date, Adj.Close)
 df$Date <- as.Date(df$Date)
@@ -285,34 +292,34 @@ closing price.
 ### auto.arima()
 The auto.arima() function was applied on the squared logged returns, which is 
 the difference of the log of the adjusted closing price squared. This 
-helped identify if there was autoregression or moving average pattern 
+helped identify if there was autoregressive or moving average pattern 
 in the votatility of the returns and helps determine the order of
 the GARCH model. 
 
-```{r}
-suppressWarnings(library(forecast))
+The best ARIMA model returned by the function was ARIMA(1,0,1) with a non-zero 
+mean. The output of the function can be found in the Appendix. 
 
-arma_rt_squared <- auto.arima(stock$Returns^2, max.p = 5, max.q = 5, max.order = 10,
-                              stationary = T, seasonal = F, trace = F,
-                              stepwise = F, approximation = F)
-#summary(arma_rt_squared)
-```
 
 ## VAR
-We used a VAR (Vector Autoregression) model for feature selection for 
-the two linear models. After running the VARselect() function, we found that 
-the lagged values of daily sentiment and lagged values of returns.
+We used a VAR (Vector Autoregression) model to perform feature selection for 
+linear modeling. After running the VARselect() function, we found that 
+the lagged values of daily sentiment and lagged values of returns were 
+the selected variables. Thus, we use these two variables at specific lags in 
+two linear models: one linear model to predict TSLA stock returns and one 
+to predict the average daily sentiment of Tesla tweets. The function output 
+is included in the Appendix.
 
 
 
 # Results
 
+The summary of our GARCH(1,1) model is below.
 ```{r}
 stock_ts <- ts(stock$Returns, 
                start=c(2021,9), 
                frequency=365)  
 garch_model <- garchFit(~ garch(1,1), data=stock_ts, trace=FALSE)
-#summary(garch_model)
+summary(garch_model)
 
 par(mfrow=c(1,1))
 plot(garch_model, which = 1)
@@ -320,6 +327,8 @@ plot(garch_model, which = 2)
 
 par(mfrow=c(1,1))
 ```
+
+Based on the GARCH(1,1) fit, we see that only the GARCH coefficient of 0.939 is significant at $alpha=0.05$ level($p \approx 0$). This model suggests that the  volatility of the Tesla's stock returns is best predicted by the lagged conditional variance since other coefficients are not statistically significant. If we take a look at the conditional volatility plot, we indeed see that the conditional volatility is in different clusters of high and low volatility, meaning that it exhibits volatility clustering.
 
 
 ```{r}
@@ -329,20 +338,11 @@ model <- lm(Returns ~ daily_sentiment, data = combined_data)
 #pander(summary(model))
 ```
 
-```{r}
-suppressMessages(library(vars))
-df <- combined_data[, c("Returns", "daily_sentiment")]
-# VARselect
-lag.select <- VARselect(df, 
-                        lag.max = 30, 
-                        type = "both")
-optimal.lags <- lag.select$selection['AIC(n)']
 
-# Fit the VAR model
-var.model <- VAR(df, p = optimal.lags)
+Going further into modeling the Tesla's stock price, we used the lag 1 and lag 2 terms of the returns, and also the lag 1 and lag 2 of the daily sentiment scores of the tweets. Our model is:
+$$\text{Return} = \beta_0 + \beta_1\text{Return}_1 + \beta_2\text{Return}_2+ \beta_3\text{sentiment} + \beta_4\text{sentiment}_1 + \beta_5\text{sentiment}_2 $$
 
-#pander(summary(var.model))
-```
+The linear model output is below.
 
 ```{r}
 suppressMessages(library(dplyr))
@@ -356,27 +356,30 @@ combined_data <- combined_data %>%
     daily_sentiment_l2 = lag(daily_sentiment, 2)
   )
 
-model <- lm(Returns ~ Returns_l1 + Returns_l2 + daily_sentiment + daily_sentiment_l1 + daily_sentiment_l2, data = combined_data)
+model <- lm(Returns ~ Returns_l1 + Returns_l2 + daily_sentiment + 
+              daily_sentiment_l1 + daily_sentiment_l2, data = combined_data)
 
 pander(summary(model))
 ```
 
-```{r}
-model <- lm(daily_sentiment ~ Returns + Returns_l1 + Returns_l2 + daily_sentiment_l1 + daily_sentiment_l2, data = combined_data)
 
-pander(summary(model))
-```
+Based on the output, we see that only the L2 term for daily sentiment score is significant with estimate of 0.02($p$=0.0405). The adjusted R squared value is 0.001734, which means that we can only explain the 0.1734% of the variability in the response value. Thus, this model is not very helpful in predicting the stock returns.
 
-Based on the Garch(1,1) fit, we see that only the GARCH coefficient of 0.939 is significant at $alpha=0.05$ level($p \approx 0$). This model suggests that the  volatility of the Tesla's stock returns is best predicted by the lagged conditional variance since other coefficients are not statistically significant. If we take a look at the conditional volatility plot, we indeed see that the conditional volatility is in different clusters of high and low volatility, meaning that it exhibits volatility clustering.
-
-Going further into modeling the Tesla's stock price, we used the lag 1 and lag 2 terms of the returns, and also the lag 1 and lag 2 of the daily sentiment scores of the tweets. Our model is:
-$$\text{Return} = \beta_0 + \beta_1\text{Return}_1 + \beta_2\text{Return}_2+ \beta_3\text{sentiment} + \beta_4\text{sentiment}_1 + \beta_5\text{sentiment}_2 $$
-Based on the output, we see that only the lag 2 term for daily sentiment score is significant with estimate of 0.02($p$=0.0405). The adjusted R squared value is 0.001734, which means that we can only explain the 0.1734% of the variability in the response value. Thus, this model is not so helpful in predicting the return.
 
 For predicting the daily sentiment score based on its previous lagged terms and the returns, the model is:
 $$\text{sentiment} = \beta_0 + \beta_1\text{sentiment}_1 + \beta_2\text{sentiment}_2+ \beta_3\text{Return} + \beta_4\text{Return}_1 + \beta_5\text{Return}_2$$
-The lagged 1 and 2 terms of both returns and daily sentiment score are significant, which intuitively makes sense. However, this model is not as useful since we can't make profit off of predicting the sentiment as oppsed to predicting the stock returns. Further is discussed in discussion section.
 
+The second linear model output is below:
+
+```{r}
+model <- lm(daily_sentiment ~ Returns + Returns_l1 +
+              Returns_l2 + daily_sentiment_l1 + 
+              daily_sentiment_l2, data = combined_data)
+
+pander(summary(model))
+```
+
+The lagged 1 and 2 terms of both returns and daily sentiment score are significant, which intuitively makes sense. However, this model is not as useful since we cannot make profit off of predicting the sentiment as opposed to predicting the stock returns.
 
 # Discussion
 Our goal for this project was to predict Tesla's stock price based on the 
@@ -438,7 +441,33 @@ predictive power of social media sentiment more effectively.
 
 # Appendix {-}
 
-Notice how the appendix below gathers all the code blocks above and nicely pastes them together.
+## Automatic ARIMA output
+The output from auto.arima() is below.
+```{r}
+suppressWarnings(library(forecast))
+
+arma_rt_squared <- auto.arima(stock$Returns^2, max.p = 5, max.q = 5, max.order = 10,
+                              stationary = T, seasonal = F, trace = F,
+                              stepwise = F, approximation = F)
+summary(arma_rt_squared)
+```
+
+## VAR function output
+The output from VARselect() is below.
+```{r}
+suppressMessages(library(vars))
+df <- combined_data[, c("Returns", "daily_sentiment")]
+# VARselect
+lag.select <- VARselect(df, 
+                        lag.max = 30, 
+                        type = "both")
+optimal.lags <- lag.select$selection['AIC(n)']
+
+# Fit the VAR model
+var.model <- VAR(df, p = optimal.lags)
+
+pander(summary(var.model))
+```
 
 ```{r ref.label=knitr::all_labels(), echo = T, eval = F}
 ```
