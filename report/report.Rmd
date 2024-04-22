@@ -36,7 +36,7 @@ suppressMessages(library(pander))
 
 # Executive Summary {-}
 
-Our research investigated the relationship between investor sentiment on Twitter and the financial performance of Tesla, analyzing 37,422 tweets along the company’s stock data from September 30, 2021, to September 30, 2022. We applied time series and sentiment analysis, using models like GARCH for volatility and VAR for feature selection. Our findings revealed only a weak statistically significant correlation between the sentiment of Tesla-related tweets and stock returns, particularly with a two-day lag in tweet sentiment showing a minimal predictive impact. This indicates that while there is some relationship between public sentiment and stock performance, its predictive power is limited for practical financial forecasting. Future research will aim to refine these models and include additional economic factors, broader market indicators, and tweet engagement metrics to enhance understanding and predictive accuracy of the impact of social media on stock prices. This study highlights the challenge of using social media sentiment as a reliable predictor for stock market behavior.
+Our research investigated the relationship between investor sentiment on Twitter and the financial performance of Tesla, analyzing 37,422 tweets along the company’s stock data from September 30, 2021, to September 30, 2022. We applied time series and sentiment analysis, using models like GARCH for volatility and VAR for feature selection. Our findings revealed only a weak statistically significant correlation between the sentiment of Tesla-related tweets and stock returns, particularly with a two-day lag in tweet sentiment, showing a minimal predictive impact. This indicates that while there is some relationship between public sentiment and stock performance, its predictive power is limited for practical financial forecasting. Future research will aim to refine these models and include additional economic factors, broader market indicators, and tweet engagement metrics to enhance understanding and predictive accuracy of the impact of social media on stock prices. This study highlights the challenge of using social media sentiment as a reliable predictor for stock market behavior.
 
 
 # Introduction
@@ -76,8 +76,8 @@ stock TSLA is a notably volatile stock, jumping between $\$209.38$ and
 $\$409.97$ several times during the year of data.
 
 The time series analysis in this report can be generalized and adapted
-to any large cap stock with a reasonably active investor base, and 
-it is not specific only to TSLA. The analysis attempts to investigate
+to any large cap stock with a reasonably active investor base, and  
+is not specific only to TSLA. The analysis attempts to investigate
 Tesla's Twitter sentiment and stock returns over the year of data.
 
 
