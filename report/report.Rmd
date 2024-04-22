@@ -34,56 +34,65 @@ suppressMessages(library(fGarch))
 suppressMessages(library(pander))
 ```
 
-# Executive summary {-}
+# Executive Summary {-}
 
-Our research investigated the relationship between public opinion on Twitter and the financial performance of Tesla, analyzing 37,422 tweets along the company’s stock data from September 30, 2021, to September 30, 2022. We applied time series and sentiment analysis, using models like GARCH for volatility and VAR for feature selection. Our findings revealed only a weak statistically significant correlation between the sentiment of Tesla-related tweets and stock returns, particularly with a two-day lag in tweet sentiment showing a minimal predictive impact. This indicates that while there is some relationship between public sentiment and stock performance, its predictive power is limited for practical financial forecasting. Future research will aim to refine these models and include broader market indicators and tweet engagement metrics to enhance understanding and predictive accuracy of the impact of social media on stock prices. This study highlights the challenge of using social media sentiment as a reliable predictor for stock market behavior.
+Our research investigated the relationship between investor sentiment on Twitter and the financial performance of Tesla, analyzing 37,422 tweets along the company’s stock data from September 30, 2021, to September 30, 2022. We applied time series and sentiment analysis, using models like GARCH for volatility and VAR for feature selection. Our findings revealed only a weak statistically significant correlation between the sentiment of Tesla-related tweets and stock returns, particularly with a two-day lag in tweet sentiment showing a minimal predictive impact. This indicates that while there is some relationship between public sentiment and stock performance, its predictive power is limited for practical financial forecasting. Future research will aim to refine these models and include additional economic factors, broader market indicators, and tweet engagement metrics to enhance understanding and predictive accuracy of the impact of social media on stock prices. This study highlights the challenge of using social media sentiment as a reliable predictor for stock market behavior.
 
 
 # Introduction
 
-Public opinion of a company can be beneficial or harmful to the company's 
-image and may also affect its sales or profits. Thus, every large company 
-hires employees to benefit their branding, marketing, and public communications. 
-We set to investigate whether we can quantify a relationship between a company's 
-public image and their financial health using the case study of Tesla.
+Stock markets are driven by a complex interplay of factors including economic 
+indicators, investor sentiment, geopolitical events, corporate earnings, and 
+monetary policy. Factors such as economic indicators, earnings and monetary
+policy are often slow moving events, whereas geopolitical events are sudden
+and unpredictable. Apart from these factors, a key driver of day to day
+stock prices is investor sentiment.
 
-Tesla, a company which specializes in electric vehicles, is currently led by 
-Elon Musk, who is often intertwined with the company's public image. Musk can
-be considered a public relations nightmare, engaging in Twitter rants and having
-a lack of filter that often leads to controversies and speculation.
+The purpose of this study is to investigate the impact of investor sentiment 
+on stock prices. By examining patterns and correlations between investor
+sentiment and stock market action, we hope to gain insights into behavioral
+aspects of market participants. Also, the analysis can provide further
+guidance on the other factors that need to be taken into consideration for
+a broad based quantitative analysis of stock market behavior.
 
-To measure public opinion, we use textual data gathered from Twitter, a 
+This study focuses on Tesla, an acknowledged pioneer in the electric 
+vehicle (EV) market segment, with a current market capitalization of $500B.
+Tesla is particularly interesting due to its meteoric rise as an EV
+market leader in the short period since its founding in 2003, as well
+as due to its volatile stock, and due to its CEO, Elon Musk, who is
+perceived as a controversial figure. We selected this 
+stock due to the availability of a wealth of investor sentiment, both
+positive and negative, in the form of stock tweets. 
+
+To measure investor sentiment, we use textual data gathered from Twitter, a 
 text-based social media with millions of English-speaking users. Tweets 
 mentioning Tesla or the company's stock ticker, TSLA, over one year were 
 collected (09-30-2021 to 09-30-2022). From the tweets, we assign sentiment 
-scores based on the positive and negative language used from 
-the text of the tweets, giving us a measurable proxy for public opinion. 
-To measure the financial health of Tesla, we observe its adjusted closing 
-stock price and returns over same the year. 
+scores based on the positive and negative language used from the text of 
+the tweets, giving us a measurable proxy for public opinion. For measuring
+the impact on market action, we use the adjusted closing stock price for 
+TSLA and its returns over same the year. As indicated earlier, Tesla's 
+stock TSLA is a notably volatile stock, jumping between $\$209.38$ and 
+$\$409.97$ several times during the year of data.
 
-We chose Tesla because of our background knowledge of its popularity within the 
-public eye, giving us a wealth of positive and negative examples for sentiment 
-analysis. Also, Tesla's stock TSLA is a notably volatile stock, jumping between 
-$\$209.38$ and $\$409.97$ several times during the year of data.
-
-We engage in time series analysis and attempt to investigate a potential 
-relationship between Tesla's Twitter sentiment and stock returns on a 
-given day over the year of data.
+The time series analysis in this report can be generalized and adapted
+to any large cap stock with a reasonably active investor base, and 
+it is not specific only to TSLA. The analysis attempts to investigate
+Tesla's Twitter sentiment and stock returns over the year of data.
 
 
 ## Research Questions
 
 The project aimed to answer two main questions: First, is there a relationship 
-between the sentiment of Tesla-related tweets and the company's stock returns 
-on any given day? Second, can the sentiment derived from tweets mentioning 
-Tesla be used to forecast the company's stock returns on a subsequent day? 
-
+between the sentiment of Tesla-related tweets and the company's stock returns?
+Second, can the sentiment derived from tweets mentioning Tesla be used to 
+forecast the company's stock returns over the next few days?
 
 ## Data
 For this analysis, we utilized two related datasets from Kaggle. The first
 dataset includes 80,793 tweets related to 25 different companies, while the 
 second provided daily closing stock prices for these same companies over a 
-period from September 30, 2021, to September 30, 2022. These companies are the 
+period from September 30, 2021 to September 30, 2022. These companies are the 
 top 25 “most watched” stocks from Yahoo Finance and we 
 filtered our data to only include tweets that mention Tesla or TSLA stock.
 This left us with 46% of the tweets in data mentioned TSLA (37422 tweets) 
@@ -100,12 +109,12 @@ choosing the parameters for these models.
 
 ```{r}
 # Gather stock tweets data
-#tweets <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv")
-tweets <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")
+tweets <- read.csv("../data/stock_tweets.csv")
 # Retaining the year, month, day
 tweets$day <- as.Date(tweets$Date,"%Y-%m-%d %H:%M:%S")
 # Filter to just Tesla tweets
-tesla <- filter(tweets, tweets$Company.Name == "Tesla, Inc.")
+tesla <- filter(tweets, 
+          tweets$Company.Name == "Tesla, Inc." | tweets$Stock.Name == "TSLA")
 num_tweets_tesla <- data.frame(table(tesla$day))
 names(num_tweets_tesla) <- c("day", "num_tweets")
 # Time series for number of Tesla tweets per day
@@ -138,11 +147,8 @@ characteristics, with noticeable fluctuations and periodic spikes indicating
 changes in the mean and variance over time. The ACF plot specifically shows 
 possible seasonality with four clusters of ACF spikes over the time period of 
 the data. These spikes in the number of tweets mentioning Tesla appear to 
-occur approximately every three months.
-
-Since the number of Tesla tweets varies per day in a periodic manner, we 
-decided to use averaging in our calculation of daily tweet sentiment. Thus, 
-the fluctuating number of Tesla tweets is accounted for.
+occur approximately every three months, possibly related to earnings
+announcements.
 
 
 ## Daily Sentiment of Tesla Tweets
@@ -158,15 +164,12 @@ tweet sentiment scores were averaged into a daily tweet sentiment score for the
 day. The daily sentiment scores ranged from -0.575 to 1.65.
 
 ```{r}
-#df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_tweets.csv") 
-df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_tweets.csv")
+df <- read.csv("../data/stock_tweets.csv") 
 
 df <- df %>%
   filter(Stock.Name == 'TSLA') %>%
   mutate(Tweet.ID = row_number()) %>%
   dplyr::select(Tweet.ID, Date, Tweet)
-#dim(df)
-#names(df)
 
 df$Date <-  ymd(substr(df$Date, 1, 10))
 tweets <- data.frame(df)
@@ -204,9 +207,10 @@ daily_sentiment <- tweets_sentiment_summary  %>%
   summarise(daily_sentiment = mean(sentiment_score))
 ```
 
-Here, we can view the daily sentiment of tweets over the year of our data 
-along with the ACF and PACF.
-```{r plot3, fig.align='center', fig.pos='H', fig.cap="Daily Sentiment of Tesla Tweets"}
+We can view the daily sentiment of tweets over the year of our data 
+along with the ACF and PACF in the charts below.\
+
+```{r plot2, fig.align='center', fig.pos='H', fig.cap="Daily Sentiment of Tesla Tweets"}
 sentiment_ts <- ts(daily_sentiment$daily_sentiment, 
                     start = c(2021, 273),
                     frequency = 365)
@@ -214,14 +218,14 @@ plot(sentiment_ts, main = "Daily Sentiment of Tesla Tweets",
      ylab = "Average Daily Sentiment Score")
 ```
 
-```{r plot4, fig.align='center', fig.pos='H', fig.cap="ACF and PACF of Daily Sentiment Scores"}
+```{r plot3, fig.align='center', fig.pos='H', fig.cap="ACF and PACF of Daily Sentiment Scores"}
 par(mfrow=c(1,2))
 acf(sentiment_ts, main = "ACF of Daily Sentiment")
 pacf(sentiment_ts, main = "PACF of Daily Sentiment")
 ```
 
-Similarly to the number of Tesla tweets per day, we observe non-stationary 
-characteristics for the daily sentiment of Tesla tweets. we see four sections of
+Similarly, we observe non-stationary 
+characteristics for the daily sentiment of Tesla tweets. We see four sections of
 ACF spikes approximately 3 months apart, suggesting seasonality. However, the 
 magnitude of the spikes for daily sentiment of tweets is less severe than the 
 magnitude of the corresponding spikes for the number of tweets per day. This is
@@ -235,8 +239,7 @@ We calculated the returns of the TSLA stock by differencing the adjusted
 close price of TSLA to 1 degree.
 
 ```{r}
-#df <- read.csv("/Users/divyarao/time-series-tweets-stocks/data/stock_yfinance_data.csv") 
-df <- read.csv("/Users/marionhaney/Library/Mobile Documents/com~apple~CloudDocs/CMU/36671 Time Series/time-series-tweets-stocks/data/stock_yfinance_data.csv")
+df <- read.csv("../data/stock_yfinance_data.csv") 
 
 df <- df %>%
   filter(Stock.Name == 'TSLA') %>%
@@ -254,12 +257,12 @@ stock <- data.frame(df)
 stock <- stock %>% na.omit()
 ```
 
-```{r plot5, fig.align='center', fig.pos='H', fig.cap="Tesla returns over time"}
+```{r plot4, fig.align='center', fig.pos='H', fig.cap="Tesla returns over time"}
 # EDA TSLA returns
 plot(stock_ts, main="TSLA Returns")
 ```
 
-```{r plot6, fig.align='center', fig.pos='H', fig.cap="ACF and PACF plots of Tesla Returns"}
+```{r plot5, fig.align='center', fig.pos='H', fig.cap="ACF and PACF plots of Tesla Returns"}
 par(mfrow=c(1,2))
 acf(stock_ts, main="ACF of TSLA Returns", na.action = na.pass)
 pacf(stock_ts, main="PACF of TSLA Returns", na.action = na.pass)
@@ -271,14 +274,17 @@ lag 0.02 and 0.05. The time series plot of TSLA returns also exhibits some
 evidence of heteroskedasticity, with a truncated shape of the time series. The 
 earlier returns exhibit a wider variance than the later returns.
 
-Thus, we decided to square the logged returns to alleviate the slight 
-non-stationary characteristics and heteroskedasticity.
+We investigate the square logged returns to better understand its
+stationary or non-stationary characteristics as well as heteroskedasticity
+in order to help us determine whether we can use GARCH (Generalized 
+Autoregressive Conditional Heteroskedasticity) models which are often
+suitable for financial time series analyis.
 
-```{r plot7, fig.align='center', fig.pos='H', fig.cap="Squared log returns of Tesla stocks over time"}
+```{r plot6, fig.align='center', fig.pos='H', fig.cap="Squared log returns of Tesla stocks over time"}
 plot(stock_ts_lsq, main="TSLA Squared Log Returns")
 ```
 
-```{r plot8, fig.align='center', fig.pos='H', fig.cap="ACF and PACF plots of sqaured log returns of Tesla stocks"}
+```{r plot7, fig.align='center', fig.pos='H', fig.cap="ACF and PACF plots of sqaured log returns of Tesla stocks"}
 par(mfrow=c(1,2))
 acf(stock_ts_lsq, main="ACF of TSLA \nSquared Log Returns", na.action = na.pass)
 pacf(stock_ts_lsq, main="PACF of TSLA \nSquared Log Returns", na.action = na.pass)
@@ -288,24 +294,21 @@ The square of logged TSLA returns exhibits only one ACF and PACF spike at
 around lag 0.03 and the plot of the square of logged TSLA returns no longer 
 has a truncated shape.
 
-So, we continued with using the square of logged TSLA returns to represent the 
-measure of TSLA stock price in our model.
 
 ## GARCH Model
 Based on the non-constant variance and non-stationarity seen from the 
-EDA for daily sentiment, we decided to use a GARCH model. A GARCH 
-(generalized autoregressive conditionally heteroskedastic) model uses values 
-of the past observations and variances to model the variance at time t. GARCH 
-is used commonly with financiald ata because of the high volatility. Since we 
+EDA for daily sentiment, we decided to use a GARCH model. A GARCH model uses 
+values of the past observations and variances to model the variance at time t. 
+GARCH is used commonly with financial data because of the high volatility. Since we 
 calculated the order of the model from running auto.arima(), we decided to fit a 
-GARCH(1, 1) model to returns, the difference of the log of the adjusted 
-closing price.
+GARCH(1, 1) model to returns, which is calculated as the difference of the 
+log of the adjusted closing price.
 
 ### Automatic ARIMA
 The auto.arima() function was applied on the squared logged returns, which is 
 the difference of the log of the adjusted closing price squared. This 
-helped identify if there was autoregressive or moving average pattern 
-in the votatility of the returns and helps determine the order of
+helped identify if there was autoregression or moving average patterns 
+in the volatility of the returns and helps determine the order of
 the GARCH model. 
 
 The best ARIMA model returned by the function was ARIMA(1,0,1) with a non-zero 
@@ -314,9 +317,10 @@ mean. The output of the function can be found in the Appendix.
 
 ## VAR
 We used a VAR (Vector Autoregression) model to perform feature selection for 
-linear modeling. After running the VARselect() function, we found that 
-the lagged values of daily sentiment and lagged values of returns were 
-the selected variables. Thus, we use these two variables at specific lags in 
+linear modeling. We also used the VARselect() function to identify
+the optimal lag using AIC in modeling returns as well as daily 
+sentiment using the lagged values of daily sentiment and lagged 
+values of returns. Finally, we use these two variables at specific lags in 
 two linear models: one linear model to predict TSLA stock returns and one 
 to predict the average daily sentiment of Tesla tweets. The function output 
 is included in the Appendix.
@@ -376,7 +380,7 @@ pander(summary(model))
 ```
 
 
-Based on the output, we see that only the L2 term for daily sentiment score is significant with estimate of 0.02($p$=0.0405). The adjusted $R^2$ value is 0.001734, which means that we can only explain the 0.1734% of the variability in the response value. Thus, this model is not very helpful in predicting the stock returns.
+Based on the output, we see that only the L2 term for daily sentiment score is significant with estimate of 0.02($p$=0.0405). The adjusted $R^2$ value is 0.001734, which means that we can only explain the 0.1734% of the variability in the response value. We conclude that the daily sentiment is not very useful for predicting the returns.
 
 
 For predicting the daily sentiment score based on its previous lagged terms and the returns, the model is:
@@ -392,7 +396,8 @@ model <- lm(daily_sentiment ~ Returns + Returns_l1 +
 pander(summary(model))
 ```
 
-The lagged 1 and 2 terms of both returns and daily sentiment score are significant, which intuitively makes sense. However, this model is not as useful since we cannot make profit off of predicting the sentiment as opposed to predicting the stock returns.
+The lagged 1 and 2 terms of both returns and daily sentiment score are significant, which intuitively makes sense. However, predicting the daily sentiment is not as
+useful as predicting the daily stock return.
 
 # Discussion
 Our goal for this project was to predict Tesla's stock price based on the 
@@ -410,7 +415,7 @@ and past daily sentiment Granger causes current daily sentiment, i.e.
 past returns and past daily sentiment can be used to predict the 
 daily sentiment for the current day. However, our original hypothesis was that 
 we would be able to predict returns and stock price using past returns and 
-daily sentiment, which is the opposite direction of Granger causality.
+daily sentiment, which has not proved possible with the current model.
 
 The findings from our model indicate a limited capacity for using tweet 
 sentiment and frequency to predict Tesla's stock price. The significant but 
@@ -435,20 +440,16 @@ sentiment.
 
 As we move forward, our project will concentrate on enhancing the predictive 
 models and broadening the analytical scope to better understand the 
-relationship between public opinion and stock market behavior. 
+relationship between investor sentiment and stock market behavior. 
 Future efforts will include incorporating broader market performance 
 indicators to understand Tesla’s stock movements within the larger financial 
-ecosystem. We will also explore longer temporal analyses to determine whether 
-the effects of negative social media events on stock prices are only temporary 
-or if they have a lasting impact. Additionally, we plan to incorporate
+ecosystem. We can also add factors such as economic indicators, geopolitical
+events, corporate earnings and monetary policy. Additionally, we plan to incorporate
 tweet engagement metrics such as likes, retweets, and views, which may offer 
 deeper insights into how social media dynamics can influence stock price
 movements. Through these improvements, we aim to build stronger predictive 
 tools for financial market analysis, refining our approach to use the 
 predictive power of social media sentiment more effectively.
-
-
-...
 
 \pagebreak
 
