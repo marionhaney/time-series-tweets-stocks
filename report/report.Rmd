@@ -35,10 +35,10 @@ suppressMessages(library(pander))
 
 # Introduction
 
-Public opinion of a company can be beneficial or harmful to a company's 
-image and may also affect their sales or profits. Thus, every large company 
+Public opinion of a company can be beneficial or harmful to the company's 
+image and may also affect its sales or profits. Thus, every large company 
 hires employees to benefit their branding, marketing, and public communications. 
-We set to investigate if we can quantify a relationship between a company's 
+We set to investigate whether we can quantify a relationship between a company's 
 public image and their financial health using the case study of Tesla.
 
 Tesla, a company which specializes in electric vehicles, is currently led by 
