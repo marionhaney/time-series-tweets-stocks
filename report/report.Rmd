@@ -122,12 +122,12 @@ data included 37,422 tweets regarding Tesla over the year. Here, we view the
 number of tweets mentioning Tesla per day plotted over time
 along with the ACF and PACF plots of the time series.
 
-```{r}
+```{r plot1, fig.align='center', fig.pos='H', fig.cap="Number of Tesla Tweets Per Day"}
 plot(tesla_ts, main = "Number of Tesla Tweets \n Per Day",
      ylab = "Number of Tweets")
 ```
 
-```{r}
+```{r plo2, fig.align='center', fig.pos='H', fig.cap="ACF and PACF of residuals for Tesla Tweets"}
 par(mfrow=c(1,2))
 acf(tesla_ts, main = "ACF of \nNumber of Tesla Tweets")
 pacf(tesla_ts, main = "PACF of \nNumber of Tesla Tweets")
@@ -206,7 +206,7 @@ daily_sentiment <- tweets_sentiment_summary  %>%
 
 Here, we can view the daily sentiment of tweets over the year of our data 
 along with the ACF and PACF.
-```{r}
+```{r plot3, fig.align='center', fig.pos='H', fig.cap="Daily Sentiment of Tesla Tweets"}
 sentiment_ts <- ts(daily_sentiment$daily_sentiment, 
                     start = c(2021, 273),
                     frequency = 365)
@@ -214,7 +214,7 @@ plot(sentiment_ts, main = "Daily Sentiment of Tesla Tweets",
      ylab = "Average Daily Sentiment Score")
 ```
 
-```{r}
+```{r plot4, fig.align='center', fig.pos='H', fig.cap="ACF and PACF of Daily Sentiment Scores"}
 par(mfrow=c(1,2))
 acf(sentiment_ts, main = "ACF of Daily Sentiment")
 pacf(sentiment_ts, main = "PACF of Daily Sentiment")
@@ -254,9 +254,12 @@ stock <- data.frame(df)
 stock <- stock %>% na.omit()
 ```
 
-```{r}
+```{r plot5, fig.align='center', fig.pos='H', fig.cap="Tesla returns over time"}
 # EDA TSLA returns
 plot(stock_ts, main="TSLA Returns")
+```
+
+```{r plot6, fig.align='center', fig.pos='H', fig.cap="ACF and PACF plots of Tesla Returns"}
 par(mfrow=c(1,2))
 acf(stock_ts, main="ACF of TSLA Returns", na.action = na.pass)
 pacf(stock_ts, main="PACF of TSLA Returns", na.action = na.pass)
@@ -271,8 +274,11 @@ earlier returns exhibit a wider variance than the later returns.
 Thus, we decided to square the logged returns to alleviate the slight 
 non-stationary characteristics and heteroskedasticity.
 
-```{r}
+```{r plot7, fig.align='center', fig.pos='H', fig.cap="Squared log returns of Tesla stocks over time"}
 plot(stock_ts_lsq, main="TSLA Squared Log Returns")
+```
+
+```{r plot8, fig.align='center', fig.pos='H', fig.cap="ACF and PACF plots of sqaured log returns of Tesla stocks"}
 par(mfrow=c(1,2))
 acf(stock_ts_lsq, main="ACF of TSLA \nSquared Log Returns", na.action = na.pass)
 pacf(stock_ts_lsq, main="PACF of TSLA \nSquared Log Returns", na.action = na.pass)
@@ -320,7 +326,7 @@ is included in the Appendix.
 # Results
 
 The summary of our GARCH(1,1) model is below.
-```{r}
+```{r plot8, fig.align='center', fig.pos='H', fig.cap="Fitted GARCH model on the time series data"}
 stock_ts <- ts(stock$Returns, 
                start=c(2021,9), 
                frequency=365)  
@@ -329,9 +335,10 @@ summary(garch_model)
 
 par(mfrow=c(1,1))
 plot(garch_model, which = 1)
-plot(garch_model, which = 2)
+```
 
-par(mfrow=c(1,1))
+```{r plot9, fig.align='center', fig.pos='H', fig.cap="Conditional Standard Deviation of the fitted GARCH model"}
+plot(garch_model, which = 2)
 ```
 
 Based on the GARCH(1,1) fit, we see that only the GARCH coefficient of 0.939 is significant at $alpha=0.05$ level($p \approx 0$). This model suggests that the  volatility of the Tesla's stock returns is best predicted by the lagged conditional variance since other coefficients are not statistically significant. If we take a look at the conditional volatility plot, we indeed see that the conditional volatility is in different clusters of high and low volatility, meaning that it exhibits volatility clustering.
