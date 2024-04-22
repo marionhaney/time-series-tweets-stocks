@@ -32,6 +32,8 @@ suppressMessages(library(pander))
 
 # Executive summary {-}
 
+Our research investigated the correlation between public sentiment on Twitter and the financial performance of Tesla, analyzing 37,422 tweets along the company’s stock data from September 30, 2021, to September 30, 2022. We applied time series and sentiment analysis, using models like GARCH for volatility and VAR for feature selection. Our findings revealed only a weak statistically significant correlation between the sentiment of Tesla-related tweets and stock returns, particularly with a two-day lag in tweet sentiment showing a minimal predictive impact. This indicates that while there is some relationship between public sentiment and stock performance, its predictive power is limited for practical financial forecasting. Future research will aim to refine these models and include broader market indicators and tweet engagement metrics to enhance understanding and predictive accuracy of the impact of social media on stock prices. This study highlights the challenge of using social media sentiment as a reliable predictor for stock market behavior.
+
 
 # Introduction
 
@@ -289,7 +291,7 @@ calculated the order of the model from running auto.arima(), we decided to fit a
 GARCH(1, 1) model to returns, the difference of the log of the adjusted 
 closing price.
 
-### auto.arima()
+### Automatic ARIMA
 The auto.arima() function was applied on the squared logged returns, which is 
 the difference of the log of the adjusted closing price squared. This 
 helped identify if there was autoregressive or moving average pattern 
@@ -363,7 +365,7 @@ pander(summary(model))
 ```
 
 
-Based on the output, we see that only the L2 term for daily sentiment score is significant with estimate of 0.02($p$=0.0405). The adjusted R squared value is 0.001734, which means that we can only explain the 0.1734% of the variability in the response value. Thus, this model is not very helpful in predicting the stock returns.
+Based on the output, we see that only the L2 term for daily sentiment score is significant with estimate of 0.02($p$=0.0405). The adjusted $R^2$ value is 0.001734, which means that we can only explain the 0.1734% of the variability in the response value. Thus, this model is not very helpful in predicting the stock returns.
 
 
 For predicting the daily sentiment score based on its previous lagged terms and the returns, the model is:
